@@ -1,6 +1,5 @@
 # .github/workflows/update_helm_chart.yml
 # Updates the Helm chart when a new Docker image is published
-# Triggers the GitHub Pages deployment for the Helm repository
 
 name: Update Helm Chart
 
@@ -33,17 +32,33 @@ jobs:
           token: ${{ secrets.GITHUB_TOKEN }}
           fetch-depth: 0
 
+      - name: Debug - Show event payload
+        run: |
+          echo "Event name: ${{ github.event_name }}"
+          echo "Client payload:"
+          echo '${{ toJson(github.event.client_payload) }}'
+          echo "Inputs:"
+          echo '${{ toJson(github.event.inputs) }}'
+
       - name: Determine version
         id: version
         run: |
-          if [ -n "${{ inputs.version }}" ]; then
-            VERSION="${{ inputs.version }}"
-          elif [ -n "${{ github.event.client_payload.version }}" ]; then
+          # Check for manual input first
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            VERSION="${{ github.event.inputs.version }}"
+          # Check for repository_dispatch payload
+          elif [ "${{ github.event_name }}" = "repository_dispatch" ]; then
             VERSION="${{ github.event.client_payload.version }}"
-          else
-            echo "No version specified"
+          fi
+          
+          if [ -z "$VERSION" ]; then
+            echo "ERROR: No version specified!"
+            echo "  github.event_name: ${{ github.event_name }}"
+            echo "  client_payload.version: ${{ github.event.client_payload.version }}"
+            echo "  inputs.version: ${{ github.event.inputs.version }}"
             exit 1
           fi
+          
           echo "version=$VERSION" >> $GITHUB_OUTPUT
           echo "Updating to version: $VERSION"
 
