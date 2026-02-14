@@ -51,7 +51,7 @@ jobs:
       - name: Checkout your repository
         uses: actions/checkout@v4
         with:
-          ref: main  # or your default branch
+          ref: main
           token: ${{ secrets.GITHUB_TOKEN }}
       
       - name: Update version tracking
@@ -63,6 +63,7 @@ jobs:
           git commit -m "Built version ${{ github.event.client_payload.version }}"
           git push
 
+      # FIXED: Use the version from the incoming dispatch event directly
       - name: Trigger Helm Chart Update
         if: success()
         uses: peter-evans/repository-dispatch@v3
@@ -70,4 +71,4 @@ jobs:
           token: ${{ secrets.GITHUB_TOKEN }}
           event-type: docker-image-published
           client-payload: |
-            {"version": "${{ steps.some-step.outputs.version }}"}
+            {"version": "${{ github.event.client_payload.version }}"}
