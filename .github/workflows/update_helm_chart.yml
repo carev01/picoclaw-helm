@@ -12,7 +12,7 @@ on:
     inputs:
       version:
         description: 'Version to update to (e.g., v0.1.0)'
-        required: false
+        required: true
         type: string
 
 permissions:
