@@ -1,0 +1,46 @@
+name: Build and Push Docker Image
+on:
+  repository_dispatch:
+    types: [build-new-release]
+
+env:
+  REGISTRY: ghcr.io
+  IMAGE_NAME: ${{ github.repository }}/picoclaw
+
+jobs:
+  build-push:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      packages: write
+    steps:
+      - name: Checkout upstream repository
+        uses: actions/checkout@v4
+        with:
+          repository: sipeed/picoclaw
+          ref: ${{ github.event.client_payload.version }}
+      
+      - name: Log in to GHCR
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      
+      - name: Build and push
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          push: true
+          tags: |
+            ghcr.io/${{ github.repository }}/picoclaw:${{ github.event.client_payload.version }}
+            ghcr.io/${{ github.repository }}/picoclaw:latest
+      
+      - name: Update version tracking
+        run: |
+          echo "${{ github.event.client_payload.version }}" > .last-build-version
+          git config user.name github-actions
+          git config user.email github-actions@github.com
+          git add .last-build-version
+          git commit -m "Built version ${{ github.event.client_payload.version }}"
+          git push
