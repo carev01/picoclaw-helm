@@ -1,34 +1,45 @@
+# .github/workflows/update_helm_chart.yml
+# Updates the Helm chart when a new Docker image is published
+# Triggers the GitHub Pages deployment for the Helm repository
+
 name: Update Helm Chart
+
 on:
   repository_dispatch:
-    types: [build-new-release]
+    types:
+      - docker-image-published
   workflow_dispatch:
     inputs:
       version:
-        description: 'Version to update to (e.g., v0.1.2)'
-        required: true
-        default: ''
+        description: 'Version to update to (e.g., v0.1.0)'
+        required: false
+        type: string
+
+permissions:
+  contents: write
+  packages: write
 
 jobs:
   update-helm:
     runs-on: ubuntu-latest
-    permissions:
-      contents: write
-      packages: write
+    outputs:
+      chart_version: ${{ steps.chart_version.outputs.version }}
+      updated: ${{ steps.commit.outputs.updated }}
+    
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
         with:
-          token: ${{ secrets.PAT_TOKEN }}
+          token: ${{ secrets.GITHUB_TOKEN }}
           fetch-depth: 0
 
       - name: Determine version
         id: version
         run: |
-          if [ -n "${{ github.event.client_payload.version }}" ]; then
-            VERSION="${{ github.event.client_payload.version }}"
-          elif [ -n "${{ inputs.version }}" ]; then
+          if [ -n "${{ inputs.version }}" ]; then
             VERSION="${{ inputs.version }}"
+          elif [ -n "${{ github.event.client_payload.version }}" ]; then
+            VERSION="${{ github.event.client_payload.version }}"
           else
             echo "No version specified"
             exit 1
@@ -36,12 +47,12 @@ jobs:
           echo "version=$VERSION" >> $GITHUB_OUTPUT
           echo "Updating to version: $VERSION"
 
-      - name: Set up Git
+      - name: Configure Git
         run: |
           git config user.name github-actions
           git config user.email github-actions@github.com
 
-      - name: Update Helm chart values
+      - name: Update values.yaml with new image tag
         run: |
           VERSION="${{ steps.version.outputs.version }}"
           
@@ -51,15 +62,13 @@ jobs:
           echo "Updated values.yaml image tag to: $VERSION"
           grep "tag:" charts/picoclaw/values.yaml
 
-      - name: Update Chart.yaml versions
+      - name: Update Chart.yaml version
+        id: chart_version
         run: |
           VERSION="${{ steps.version.outputs.version }}"
           
-          # Remove 'v' prefix for appVersion if present
-          APP_VERSION="${VERSION#v}"
-          
-          # Update appVersion in Chart.yaml
-          sed -i "s|appVersion:.*|appVersion: \"$APP_VERSION\"|g" charts/picoclaw/Chart.yaml
+          # Update appVersion in Chart.yaml (keep 'v' prefix to match upstream releases)
+          sed -i "s|appVersion:.*|appVersion: \"$VERSION\"|g" charts/picoclaw/Chart.yaml
           
           # Bump chart version (patch version)
           CURRENT_CHART_VERSION=$(grep "^version:" charts/picoclaw/Chart.yaml | awk '{print $2}')
@@ -70,27 +79,41 @@ jobs:
           sed -i "s|^version:.*|version: $NEW_CHART_VERSION|g" charts/picoclaw/Chart.yaml
           
           echo "Updated Chart.yaml:"
-          echo "  appVersion: $APP_VERSION"
+          echo "  appVersion: $VERSION"
           echo "  version: $NEW_CHART_VERSION"
           cat charts/picoclaw/Chart.yaml
+          
+          echo "version=$NEW_CHART_VERSION" >> $GITHUB_OUTPUT
 
-      - name: Validate Helm chart
-        run: |
-          helm lint charts/picoclaw
+      - name: Lint Helm chart
+        run: helm lint charts/picoclaw
 
-      - name: Commit and push changes
+      - name: Commit changes
+        id: commit
         run: |
           VERSION="${{ steps.version.outputs.version }}"
           git add charts/picoclaw/Chart.yaml charts/picoclaw/values.yaml
-          git commit -m "chore: update helm chart for picoclaw $VERSION" || echo "No changes to commit"
-          git push
+          if git diff --staged --quiet; then
+            echo "No changes to commit"
+            echo "updated=false" >> $GITHUB_OUTPUT
+          else
+            git commit -m "chore: update helm chart for picoclaw $VERSION"
+            git push
+            echo "updated=true" >> $GITHUB_OUTPUT
+          fi
 
-      - name: Create GitHub Release for Helm Chart
+      - name: Package Helm chart
+        run: |
+          mkdir -p helm-packages
+          helm package charts/picoclaw --destination helm-packages/
+          echo "CHART_FILE=$(ls helm-packages/*.tgz)" >> $GITHUB_ENV
+
+      - name: Create GitHub Release
         env:
-          GH_TOKEN: ${{ secrets.PAT_TOKEN }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           VERSION="${{ steps.version.outputs.version }}"
-          CHART_VERSION=$(grep "^version:" charts/picoclaw/Chart.yaml | awk '{print $2}')
+          CHART_VERSION="${{ steps.chart_version.outputs.version }}"
           
           # Check if release already exists
           if ! gh release view "helm-chart-$CHART_VERSION" &>/dev/null; then
@@ -99,44 +122,61 @@ jobs:
               --notes "## What's Changed
           
           - Updated PicoClaw to version **$VERSION**
-          - Image tag: \`ghcr.io/${{ github.repository }}/picoclaw:$VERSION\`
+          - Image tag: \`ghcr.io/${{ github.repository_owner }}/picoclaw-docker/picoclaw:$VERSION\`
           
           ## Installation
           
           \`\`\`bash
-          helm install picoclaw ./charts/picoclaw \\
+          # Add the Helm repository
+          helm repo add picoclaw https://${{ github.repository_owner }}.github.io/${{ github.event.repository.name }}
+          helm repo update
+          
+          # Install the chart
+          helm install picoclaw picoclaw/picoclaw \\
             -n picoclaw --create-namespace \\
             --set channels.telegram.enabled=true \\
             --set channels.telegram.token=\"YOUR_BOT_TOKEN\" \\
             --set providers.openrouter.apiKey=\"YOUR_API_KEY\"
           \`\`\`
           
+          ## OCI Installation (alternative)
+          
+          \`\`\`bash
+          helm install picoclaw oci://ghcr.io/${{ github.repository_owner }}/picoclaw-docker/picoclaw \\
+            --version $CHART_VERSION \\
+            -n picoclaw --create-namespace
+          \`\`\`
+          
           ## Upgrade
           
           \`\`\`bash
-          helm upgrade picoclaw ./charts/picoclaw -n picoclaw
+          helm repo update
+          helm upgrade picoclaw picoclaw/picoclaw -n picoclaw
           \`\`\`
           " \
+              ${{ env.CHART_FILE }} \
               --latest
             echo "Created release: helm-chart-$CHART_VERSION"
           else
             echo "Release helm-chart-$CHART_VERSION already exists, skipping"
           fi
 
-      - name: Package and publish Helm chart to GHCR
+      - name: Login to GHCR
+        run: echo ${{ secrets.GITHUB_TOKEN }} | helm registry login ghcr.io -u ${{ github.actor }} --password-stdin
+
+      - name: Push to GHCR (OCI)
         run: |
-          VERSION="${{ steps.version.outputs.version }}"
-          
-          # Login to GHCR for Helm
-          echo ${{ secrets.GITHUB_TOKEN }} | helm registry login ghcr.io -u ${{ github.actor }} --password-stdin
-          
-          # Package the chart
-          helm package charts/picoclaw \
-            --destination ./helm-packages \
-            --version $(grep "^version:" charts/picoclaw/Chart.yaml | awk '{print $2}')
-          
-          # Push to GHCR
-          CHART_FILE=$(ls ./helm-packages/*.tgz | head -1)
-          helm push $CHART_FILE oci://ghcr.io/${{ github.repository }}
-          
-          echo "Published Helm chart: $CHART_FILE"
+          helm push ${{ env.CHART_FILE }} oci://ghcr.io/${{ github.repository_owner }}/picoclaw-docker
+          echo "Published Helm chart to OCI: ${{ env.CHART_FILE }}"
+
+  # Trigger the GitHub Pages deployment workflow
+  trigger-pages:
+    needs: update-helm
+    if: needs.update-helm.outputs.updated == 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Trigger Pages Deployment
+        uses: peter-evans/repository-dispatch@v3
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          event-type: helm-chart-updated
