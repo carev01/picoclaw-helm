@@ -62,3 +62,12 @@ jobs:
           git add .last-build-version
           git commit -m "Built version ${{ github.event.client_payload.version }}"
           git push
+
+      - name: Trigger Helm Chart Update
+        if: success()
+        uses: peter-evans/repository-dispatch@v3
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          event-type: docker-image-published
+          client-payload: |
+            {"version": "${{ steps.some-step.outputs.version }}"}
