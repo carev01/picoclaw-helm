@@ -14,127 +14,45 @@ jobs:
       contents: write
       packages: write
     steps:
-      # Step 1: Check out upstream repo to build
+      # Checkout YOUR repo (contains the patch script)
+      - name: Checkout your repository (tools)
+        uses: actions/checkout@v4
+        with:
+          ref: main
+          path: self
+
+      # Checkout upstream repo to build
       - name: Checkout upstream repository
         uses: actions/checkout@v4
         with:
           repository: sipeed/picoclaw
           ref: ${{ github.event.client_payload.version }}
-      
-      - name: Patch Dockerfile
-        run: |
-          echo "=== Original Dockerfile ==="
-          cat Dockerfile
-          echo ""
-          
-          # Get required Go version from go.mod
-          REQUIRED_GO=$(grep "^go " go.mod | awk '{print $2}')
-          echo "go.mod requires Go $REQUIRED_GO"
-          
-          # Check if Dockerfile already has non-root user setup (future-proof check)
-          if grep -q "USER picoclaw\|USER 1000\|picoclaw:x:1000" Dockerfile; then
-            echo "Dockerfile already has non-root user setup, skipping user patches"
-          else
-            echo "Adding non-root user setup..."
-            
-            # Create a patch script for the runtime stage
-            cat > dockerfile_patch.sh << 'PATCH_EOF'
-                #!/bin/bash
-                # This script patches the Dockerfile to add non-root user support
-                # It's designed to be idempotent and future-proof
-                
-                DOCKERFILE="Dockerfile"
-                
-                # Function to check if a pattern exists
-                has_pattern() {
-                    grep -q "$1" "$DOCKERFILE"
-                }
-                
-                # Create a temporary file for the patched Dockerfile
-                TMP_FILE=$(mktemp)
-                
-                # Process the Dockerfile line by line
-                IN_RUNTIME_STAGE=false
-                USER_CREATED=false
-                
-                while IFS= read -r line || [[ -n "$line" ]]; do
-                    # Detect runtime stage (alpine-based, not builder)
-                    if [[ "$line" =~ ^FROM[[:space:]]+alpine ]] || [[ "$line" =~ ^FROM[[:space:]]+.*alpine.*AS[[:space:]]+[^b] ]]; then
-                        IN_RUNTIME_STAGE=true
-                    fi
-                    
-                    # Write the current line
-                    echo "$line" >> "$TMP_FILE"
-                    
-                    # After 'apk add' line in runtime stage, add user creation if not exists
-                    if $IN_RUNTIME_STAGE && [[ "$line" =~ apk[[:space:]]add ]] && ! $USER_CREATED; then
-                        # Check if user creation already exists anywhere in file
-                        if ! has_pattern "adduser.*picoclaw\|useradd.*picoclaw\|picoclaw:x:1000"; then
-                            echo "" >> "$TMP_FILE"
-                            echo "# Create non-root user for security" >> "$TMP_FILE"
-                            echo "RUN adduser -D -u 1000 -h /home/picoclaw -s /bin/sh picoclaw" >> "$TMP_FILE"
-                            USER_CREATED=true
-                        fi
-                    fi
-                    
-                done < "$DOCKERFILE"
-                
-                # Now handle the directory creation and permissions
-                # Replace /root/.picoclaw with /home/picoclaw/.picoclaw
-                sed -i 's|/root/\.picoclaw|/home/picoclaw/.picoclaw|g' "$TMP_FILE"
-                
-                # Add USER instruction and chown before ENTRYPOINT if not present
-                if ! has_pattern "^USER picoclaw\|^USER 1000"; then
-                    # Find the line before ENTRYPOINT and add USER instruction
-                    sed -i '/^ENTRYPOINT/i \
-                # Set ownership and switch to non-root user\
-                RUN chown -R picoclaw:picoclaw /home/picoclaw /opt/picoclaw 2>/dev/null || true\
-                USER picoclaw\
-                ' "$TMP_FILE"
-                fi
-                
-                # Replace the original Dockerfile
-                mv "$TMP_FILE" "$DOCKERFILE"
-                
-                # Clean up
-                rm -f dockerfile_patch.sh
-                PATCH_EOF
+          path: upstream
 
-            chmod +x dockerfile_patch.sh
-            ./dockerfile_patch.sh
-          fi
-          
-          # Always update Go version (this is always needed)
-          sed -i "s/FROM golang:[0-9.]*-alpine/FROM golang:${REQUIRED_GO}-alpine/g" Dockerfile
-          
-          echo ""
-          echo "=== Patched Dockerfile ==="
-          cat Dockerfile
-      
+      - name: Patch upstream Dockerfile (Go + non-root)
+        run: |
+          python3 self/.github/scripts/patch_picoclaw_dockerfile.py upstream/Dockerfile upstream/go.mod
+          echo "Dockerfile key lines:"
+          grep -nE '^(FROM|USER|WORKDIR|ENTRYPOINT)|/home/picoclaw|PICOCLAW_' upstream/Dockerfile || true
+
       - name: Log in to GHCR
         uses: docker/login-action@v3
         with:
           registry: ghcr.io
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
-      
+
       - name: Build and push
         uses: docker/build-push-action@v5
         with:
-          context: .
+          context: upstream
           push: true
           tags: |
             ghcr.io/${{ github.repository }}/picoclaw:${{ github.event.client_payload.version }}
             ghcr.io/${{ github.repository }}/picoclaw:latest
 
-      # Step 2: Check out YOUR repo to update version tracking
-      - name: Checkout your repository
-        uses: actions/checkout@v4
-        with:
-          ref: main
-          token: ${{ secrets.GITHUB_TOKEN }}
-      
       - name: Update version tracking
+        working-directory: self
         run: |
           echo "${{ github.event.client_payload.version }}" > .last-build-version
           git config user.name github-actions
