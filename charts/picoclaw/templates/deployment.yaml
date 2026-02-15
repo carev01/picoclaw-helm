@@ -56,9 +56,9 @@ spec:
             {{- toYaml .Values.resources | nindent 12 }}
           volumeMounts:
             - name: workspace
-              mountPath: /picoclaw/.picoclaw/workspace
+              mountPath: /home/picoclaw/.picoclaw/workspace
             - name: config
-              mountPath: /picoclaw/.picoclaw/config.json
+              mountPath: /home/picoclaw/.picoclaw/config.json
               subPath: config.json
               readOnly: true
       volumes:
