@@ -39,66 +39,66 @@ jobs:
             
             # Create a patch script for the runtime stage
             cat > dockerfile_patch.sh << 'PATCH_EOF'
-#!/bin/bash
-# This script patches the Dockerfile to add non-root user support
-# It's designed to be idempotent and future-proof
-
-DOCKERFILE="Dockerfile"
-
-# Function to check if a pattern exists
-has_pattern() {
-    grep -q "$1" "$DOCKERFILE"
-}
-
-# Create a temporary file for the patched Dockerfile
-TMP_FILE=$(mktemp)
-
-# Process the Dockerfile line by line
-IN_RUNTIME_STAGE=false
-USER_CREATED=false
-
-while IFS= read -r line || [[ -n "$line" ]]; do
-    # Detect runtime stage (alpine-based, not builder)
-    if [[ "$line" =~ ^FROM[[:space:]]+alpine ]] || [[ "$line" =~ ^FROM[[:space:]]+.*alpine.*AS[[:space:]]+[^b] ]]; then
-        IN_RUNTIME_STAGE=true
-    fi
-    
-    # Write the current line
-    echo "$line" >> "$TMP_FILE"
-    
-    # After 'apk add' line in runtime stage, add user creation if not exists
-    if $IN_RUNTIME_STAGE && [[ "$line" =~ apk[[:space:]]add ]] && ! $USER_CREATED; then
-        # Check if user creation already exists anywhere in file
-        if ! has_pattern "adduser.*picoclaw\|useradd.*picoclaw\|picoclaw:x:1000"; then
-            echo "" >> "$TMP_FILE"
-            echo "# Create non-root user for security" >> "$TMP_FILE"
-            echo "RUN adduser -D -u 1000 -h /home/picoclaw -s /bin/sh picoclaw" >> "$TMP_FILE"
-            USER_CREATED=true
-        fi
-    fi
-    
-done < "$DOCKERFILE"
-
-# Now handle the directory creation and permissions
-# Replace /root/.picoclaw with /home/picoclaw/.picoclaw
-sed -i 's|/root/\.picoclaw|/home/picoclaw/.picoclaw|g' "$TMP_FILE"
-
-# Add USER instruction and chown before ENTRYPOINT if not present
-if ! has_pattern "^USER picoclaw\|^USER 1000"; then
-    # Find the line before ENTRYPOINT and add USER instruction
-    sed -i '/^ENTRYPOINT/i \
-# Set ownership and switch to non-root user\
-RUN chown -R picoclaw:picoclaw /home/picoclaw /opt/picoclaw 2>/dev/null || true\
-USER picoclaw\
-' "$TMP_FILE"
-fi
-
-# Replace the original Dockerfile
-mv "$TMP_FILE" "$DOCKERFILE"
-
-# Clean up
-rm -f dockerfile_patch.sh
-PATCH_EOF
+                #!/bin/bash
+                # This script patches the Dockerfile to add non-root user support
+                # It's designed to be idempotent and future-proof
+                
+                DOCKERFILE="Dockerfile"
+                
+                # Function to check if a pattern exists
+                has_pattern() {
+                    grep -q "$1" "$DOCKERFILE"
+                }
+                
+                # Create a temporary file for the patched Dockerfile
+                TMP_FILE=$(mktemp)
+                
+                # Process the Dockerfile line by line
+                IN_RUNTIME_STAGE=false
+                USER_CREATED=false
+                
+                while IFS= read -r line || [[ -n "$line" ]]; do
+                    # Detect runtime stage (alpine-based, not builder)
+                    if [[ "$line" =~ ^FROM[[:space:]]+alpine ]] || [[ "$line" =~ ^FROM[[:space:]]+.*alpine.*AS[[:space:]]+[^b] ]]; then
+                        IN_RUNTIME_STAGE=true
+                    fi
+                    
+                    # Write the current line
+                    echo "$line" >> "$TMP_FILE"
+                    
+                    # After 'apk add' line in runtime stage, add user creation if not exists
+                    if $IN_RUNTIME_STAGE && [[ "$line" =~ apk[[:space:]]add ]] && ! $USER_CREATED; then
+                        # Check if user creation already exists anywhere in file
+                        if ! has_pattern "adduser.*picoclaw\|useradd.*picoclaw\|picoclaw:x:1000"; then
+                            echo "" >> "$TMP_FILE"
+                            echo "# Create non-root user for security" >> "$TMP_FILE"
+                            echo "RUN adduser -D -u 1000 -h /home/picoclaw -s /bin/sh picoclaw" >> "$TMP_FILE"
+                            USER_CREATED=true
+                        fi
+                    fi
+                    
+                done < "$DOCKERFILE"
+                
+                # Now handle the directory creation and permissions
+                # Replace /root/.picoclaw with /home/picoclaw/.picoclaw
+                sed -i 's|/root/\.picoclaw|/home/picoclaw/.picoclaw|g' "$TMP_FILE"
+                
+                # Add USER instruction and chown before ENTRYPOINT if not present
+                if ! has_pattern "^USER picoclaw\|^USER 1000"; then
+                    # Find the line before ENTRYPOINT and add USER instruction
+                    sed -i '/^ENTRYPOINT/i \
+                # Set ownership and switch to non-root user\
+                RUN chown -R picoclaw:picoclaw /home/picoclaw /opt/picoclaw 2>/dev/null || true\
+                USER picoclaw\
+                ' "$TMP_FILE"
+                fi
+                
+                # Replace the original Dockerfile
+                mv "$TMP_FILE" "$DOCKERFILE"
+                
+                # Clean up
+                rm -f dockerfile_patch.sh
+                PATCH_EOF
 
             chmod +x dockerfile_patch.sh
             ./dockerfile_patch.sh
