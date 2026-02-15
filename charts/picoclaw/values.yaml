@@ -75,7 +75,6 @@ picoclaw:
     enabled: true
     interval: 30
 
-# Tools - MUST define full structure
 tools:
   web:
     brave:
@@ -86,7 +85,6 @@ tools:
       enabled: true
       maxResults: 5
 
-# Channels - MUST define full structure
 channels:
   telegram:
     enabled: false
@@ -115,7 +113,6 @@ channels:
     webhookPath: "/webhook/line"
     allowFrom: []
 
-# Providers - MUST define full structure
 providers:
   openrouter:
     apiKey: ""
