@@ -50,7 +50,7 @@ ghcr.io/carev01/picoclaw-docker/picoclaw:latest
 
 ## Helm Chart Installation
 
-### Method 1: GitHub Pages (Recommended)
+### GitHub Pages
 
 No authentication required - works with standard `helm repo add`:
 
@@ -99,8 +99,6 @@ helm install picoclaw picoclaw/picoclaw \
 | `image.repository` | Image repository | `ghcr.io/carev01/picoclaw-docker/picoclaw` |
 | `image.tag` | Image tag | `v0.1.1` |
 | `image.pullPolicy` | Image pull policy | `IfNotPresent` |
-| `service.type` | Service type | `ClusterIP` |
-| `service.port` | Service port | `18790` |
 | `persistence.enabled` | Enable persistent storage | `true` |
 | `persistence.size` | Storage size | `2Gi` |
 
@@ -282,7 +280,8 @@ picoclaw:
     port: 18790
   agents:
     workspace: "/root/.picoclaw/workspace"
-    model: "glm-4.7"        # Default model
+    provider: "zhipu"        # Default provider
+    model: "glm-4.7"         # Default model
     maxTokens: 8192          # Maximum response tokens
     temperature: 0.7         # Model temperature
     maxToolIterations: 20    # Max tool call iterations
