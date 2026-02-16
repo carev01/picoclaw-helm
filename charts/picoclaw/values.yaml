@@ -66,6 +66,7 @@ picoclaw:
     port: 18790
   agents:
     workspace: "/home/picoclaw/.picoclaw/workspace"
+    provider: "zhipu"
     model: "glm-4.7"
     maxTokens: 8192
     temperature: 0.7
