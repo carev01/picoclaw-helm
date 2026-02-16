@@ -46,6 +46,7 @@ jobs:
         uses: docker/build-push-action@v5
         with:
           context: upstream
+          platforms: linux/amd64,linux/arm64
           push: true
           tags: |
             ghcr.io/${{ github.repository }}/picoclaw:${{ github.event.client_payload.version }}
