@@ -9,7 +9,7 @@ keywords:
   - assistant
   - lightweight
   - kubernetes
-home: https://github.com/carev01/picoclaw-docker
+home: https://github.com/carev01/picoclaw-helm
 sources:
   - https://github.com/sipeed/picoclaw
 maintainers:
