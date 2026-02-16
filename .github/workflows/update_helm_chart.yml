@@ -149,17 +149,8 @@ jobs:
           # Install the chart
           helm install picoclaw picoclaw/picoclaw \\
             -n picoclaw --create-namespace \\
-            --set channels.telegram.enabled=true \\
-            --set channels.telegram.token=\"YOUR_BOT_TOKEN\" \\
-            --set providers.openrouter.apiKey=\"YOUR_API_KEY\"
-          \`\`\`
-          
-          ## OCI Installation (alternative)
-          
-          \`\`\`bash
-          helm install picoclaw oci://ghcr.io/${{ github.repository_owner }}/picoclaw-docker/picoclaw \\
-            --version $CHART_VERSION \\
-            -n picoclaw --create-namespace
+            --set auth.username=admin \\
+            --set auth.password=\"YOUR_PASSWORD\"
           \`\`\`
           
           ## Upgrade
