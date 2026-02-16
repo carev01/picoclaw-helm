@@ -7,9 +7,9 @@ metadata:
 spec:
   type: {{ .Values.service.type }}
   ports:
-    - name: gateway
+    - name: http
       port: {{ .Values.service.port }}
-      targetPort: gateway
+      targetPort: http
       protocol: TCP
   selector:
     {{- include "picoclaw.selectorLabels" . | nindent 4 }}

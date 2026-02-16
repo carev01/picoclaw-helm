@@ -1,18 +1,25 @@
 # Default values for picoclaw
+# This is a YAML-formatted file.
+
 replicaCount: 1
 
 image:
   repository: ghcr.io/carev01/picoclaw-docker/picoclaw
   pullPolicy: IfNotPresent
-  tag: "v0.1.1"
+  # Overrides the image tag whose default is the chart appVersion.
+  tag: ""
 
 imagePullSecrets: []
 nameOverride: ""
 fullnameOverride: ""
 
 serviceAccount:
+  # Specifies whether a service account should be created
   create: true
+  # Annotations to add to the service account
   annotations: {}
+  # The name of the service account to use.
+  # If not set and create is true, a name is generated using the fullname template
   name: ""
 
 podAnnotations: {}
@@ -37,109 +44,77 @@ ingress:
   enabled: false
   className: ""
   annotations: {}
+  # kubernetes.io/ingress.class: nginx
+  # kubernetes.io/tls-acme: "true"
   hosts:
     - host: picoclaw.example.com
       paths:
-        - path: /webhook/line
+        - path: /
           pathType: Prefix
   tls: []
+  #  - secretName: picoclaw-tls
+  #    hosts:
+  #      - picoclaw.example.com
 
 resources:
   limits:
     cpu: 500m
-    memory: 128Mi
+    memory: 256Mi
   requests:
     cpu: 100m
-    memory: 32Mi
+    memory: 64Mi
 
 persistence:
   enabled: true
+  # If defined, storageClassName: <storageClass>
+  # If set to "-", storageClassName: "", which disables dynamic provisioning
+  # If undefined (the default) or set to null, no storageClassName spec is
+  #   set, choosing the default provisioner.
   storageClass: ""
   accessMode: ReadWriteOnce
   size: 2Gi
   annotations: {}
 
-# PicoClaw specific configuration
-picoclaw:
-  gateway:
-    host: "0.0.0.0"
-    port: 18790
-  agents:
-    workspace: "/data/.picoclaw/workspace"
-    provider: "zhipu"
-    model: "glm-4.7"
-    maxTokens: 8192
-    temperature: 0.7
-    maxToolIterations: 20
-    restrictToWorkspace: true
-  heartbeat:
-    enabled: true
-    interval: 30
+# Authentication configuration
+auth:
+  # Username for Basic Auth. Defaults to "admin" if not set.
+  username: "admin"
+  # Password for Basic Auth. If not set, a random password will be generated
+  # and printed in the deployment logs. Check the pod logs to retrieve it.
+  password: ""
 
-tools:
-  web:
-    brave:
-      enabled: false
-      apiKey: ""
-      maxResults: 5
-    duckduckgo:
-      enabled: true
-      maxResults: 5
-
-channels:
-  telegram:
-    enabled: false
-    token: ""
-    allowFrom: []
-  discord:
-    enabled: false
-    token: ""
-    allowFrom: []
-  qq:
-    enabled: false
-    appId: ""
-    appSecret: ""
-    allowFrom: []
-  dingtalk:
-    enabled: false
-    clientId: ""
-    clientSecret: ""
-    allowFrom: []
-  line:
-    enabled: false
-    channelSecret: ""
-    channelAccessToken: ""
-    webhookHost: "0.0.0.0"
-    webhookPort: 18791
-    webhookPath: "/webhook/line"
-    allowFrom: []
-
-providers:
-  openrouter:
-    apiKey: ""
-    apiBase: ""
-  zhipu:
-    apiKey: ""
-    apiBase: ""
-  anthropic:
-    apiKey: ""
-    apiBase: ""
-  openai:
-    apiKey: ""
-    apiBase: ""
-  gemini:
-    apiKey: ""
-    apiBase: ""
-  groq:
-    apiKey: ""
-    apiBase: ""
-
+# Use an existing secret for authentication credentials
+# If set, auth.username and auth.password will be ignored
+# The secret must contain keys: ADMIN_USERNAME and ADMIN_PASSWORD
 existingSecret: ""
-existingConfigMap: ""
 
-# Liveness and readiness probes
+# Node selector for pod scheduling
+nodeSelector: {}
+
+# Tolerations for pod scheduling
+tolerations: []
+
+# Affinity for pod scheduling
+affinity: {}
+
+# Liveness probe configuration
 livenessProbe:
-  enabled: false
+  enabled: true
+  httpGet:
+    path: /health
+    port: 8080
+  initialDelaySeconds: 10
+  periodSeconds: 30
+  timeoutSeconds: 5
+  failureThreshold: 3
 
+# Readiness probe configuration
 readinessProbe:
-  enabled: false
+  enabled: true
+  httpGet:
+    path: /health
+    port: 8080
+  initialDelaySeconds: 5
+  periodSeconds: 10
+  timeoutSeconds: 5
+  failureThreshold: 3

@@ -12,7 +12,6 @@ spec:
   template:
     metadata:
       annotations:
-        checksum/config: {{ include (print $.Template.BasePath "/configmap.yaml") . | sha256sum }}
         checksum/secret: {{ include (print $.Template.BasePath "/secret.yaml") . | sha256sum }}
         {{- with .Values.podAnnotations }}
         {{- toYaml . | nindent 8 }}
@@ -33,16 +32,17 @@ spec:
             {{- toYaml .Values.securityContext | nindent 12 }}
           image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
           imagePullPolicy: {{ .Values.image.pullPolicy }}
-          args:
-            - gateway
+          env:
+            - name: PORT
+              value: "8080"
+            - name: PICOCLAW_HOME
+              value: "/data/.picoclaw"
           envFrom:
             - secretRef:
-                name: {{ include "picoclaw.fullname" . }}
-            - configMapRef:
-                name: {{ include "picoclaw.fullname" . }}
+                name: {{ .Values.existingSecret | default (include "picoclaw.fullname" .) }}
           ports:
-            - name: gateway
-              containerPort: {{ .Values.picoclaw.gateway.port }}
+            - name: http
+              containerPort: 8080
               protocol: TCP
           {{- if .Values.livenessProbe.enabled }}
           livenessProbe:
@@ -55,24 +55,17 @@ spec:
           resources:
             {{- toYaml .Values.resources | nindent 12 }}
           volumeMounts:
-            - name: workspace
-              mountPath: /home/picoclaw/.picoclaw/workspace
-            - name: config
-              mountPath: /home/picoclaw/.picoclaw/config.json
-              subPath: config.json
-              readOnly: true
+            - name: data
+              mountPath: /data
       volumes:
         {{- if .Values.persistence.enabled }}
-        - name: workspace
+        - name: data
           persistentVolumeClaim:
             claimName: {{ include "picoclaw.fullname" . }}
         {{- else }}
-        - name: workspace
+        - name: data
           emptyDir: {}
         {{- end }}
-        - name: config
-          configMap:
-            name: {{ include "picoclaw.fullname" . }}
       {{- with .Values.nodeSelector }}
       nodeSelector:
         {{- toYaml . | nindent 8 }}
