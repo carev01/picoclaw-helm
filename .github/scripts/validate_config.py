@@ -3,11 +3,11 @@
 Validate and update the web management console (server.py + templates/index.html)
 when PicoClaw's upstream config.example.json introduces new configuration options.
 
-Uses the Zhipu z.ai GLM-5-Code model to analyse differences and propose updates.
+Uses the an LLM to analyse differences and propose updates.
 
 Environment variables
 ---------------------
-ZHIPU_API_KEY       : (required) API key for z.ai
+LLM_API_KEY       : (required) API key for LLM
 UPSTREAM_VERSION    : (optional) git tag to fetch config from; defaults to 'main'
 GITHUB_OUTPUT       : (set by Actions) path to write step outputs
 """
@@ -28,8 +28,8 @@ import urllib.request
 # Constants
 # ---------------------------------------------------------------------------
 
-API_URL = "https://api.z.ai/api/paas/v4/chat/completions"
-MODEL = "GLM-5-Code"
+API_URL = "https://openrouter.ai/api/v1/chat/completions"
+MODEL = "qwen/qwen3-coder-plus"
 MAX_TOKENS = 16384
 TEMPERATURE = 0.1
 
@@ -99,32 +99,50 @@ def _flatten(obj: object, prefix: str = "") -> dict[str, object]:
     return items
 
 
-def structural_diff(upstream: dict, current: dict) -> dict:
-    """Return keys added/removed/changed between upstream and current configs."""
-    flat_up = _flatten(upstream)
-    flat_cur = _flatten(current)
-    added = {k: v for k, v in flat_up.items() if k not in flat_cur}
-    removed = {k: v for k, v in flat_cur.items() if k not in flat_up}
-    changed = {
-        k: {"upstream": flat_up[k], "current": flat_cur[k]}
-        for k in flat_up
-        if k in flat_cur and flat_up[k] != flat_cur[k]
+def get_config_analysis(upstream: dict, current_defaults: dict) -> dict:
+    """Analyze configuration differences for LLM context."""
+    flat_upstream = _flatten(upstream)
+    flat_current = _flatten(current_defaults)
+    
+    upstream_keys = set(flat_upstream.keys())
+    current_keys = set(flat_current.keys())
+    
+    new_keys = upstream_keys - current_keys
+    
+    return {
+        "upstream_config": upstream,
+        "known_fields": list(current_keys),
+        "upstream_keys": list(upstream_keys),
+        "new_keys": list(new_keys)
     }
-    return {"added": added, "removed": removed, "changed": changed}
+
+
+def extract_json_from_response(response: str) -> dict | None:
+    """Extract and parse JSON from LLM response (handling markdown blocks)."""
+    try:
+        # Extract JSON from response (handle potential markdown code blocks)
+        json_match = re.search(r'```(?:json)?\s*([\s\S]*?)```', response)
+        if json_match:
+            json_str = json_match.group(1).strip()
+        else:
+            json_str = response.strip()
+        return json.loads(json_str)
+    except Exception:
+        return None
 
 
 def extract_default_config_json(server_src: str) -> dict | None:
     """Try to extract the dict returned by default_config() in server.py."""
-    m = re.search(
-        r"def\s+default_config\s*\(\s*\)\s*:\s*\n\s*return\s*(\{.+?\n\s*})",
-        server_src,
-        re.DOTALL,
-    )
-    if not m:
-        return None
     try:
-        # The source uses Python dict syntax; eval is safe here as we control the input.
-        return json.loads(json.dumps(ast.literal_eval(m.group(1))))
+        tree = ast.parse(server_src)
+        for node in ast.walk(tree):
+            if isinstance(node, ast.FunctionDef) and node.name == "default_config":
+                for stmt in node.body:
+                    if isinstance(stmt, ast.Return) and stmt.value:
+                        # ast.literal_eval can evaluate a Dict node if it contains only literals
+                        assert stmt.value is not None
+                        return ast.literal_eval(stmt.value)
+        return None
     except Exception:
         return None
 
@@ -134,79 +152,76 @@ def extract_default_config_json(server_src: str) -> dict | None:
 # ---------------------------------------------------------------------------
 
 SYSTEM_PROMPT = textwrap.dedent("""\
-    You are a senior software engineer. You will be given:
-    1. An upstream config.example.json for PicoClaw.
-    2. The current server.py (a Starlette web management console).
-    3. The current templates/index.html (an Alpine.js + Tailwind CSS frontend).
-    4. A structural diff showing what config keys were added, removed, or changed.
+    You are an expert Python and JavaScript/HTML developer specializing in web configuration interfaces.
 
-    Your task:
-    - Update BOTH server.py and templates/index.html so that **every** configuration
-      key present in the upstream config.example.json is properly handled:
-      • server.py: update default_config(), SECRET_FIELDS, mask_secrets(), and
-        merge_secrets() as needed.
-      • templates/index.html: add/remove/modify UI controls (inputs, checkboxes,
-        selects) to expose all configuration options. Follow the existing code style
-        exactly (Alpine.js x-model bindings, Tailwind classes, section layout).
-    - Do NOT remove any existing functionality that is still in the upstream config.
-    - DO NOT remove existing configuration options even if not in upstream anymore
-    - Keep all existing code style, structure, and conventions intact.
-    - If NO changes are needed (the files already match upstream), respond with
-      exactly: NO_CHANGES_NEEDED
+    Your task is to analyze the upstream PicoClaw configuration schema and determine if the web management console (server.py and index.html) needs updates to expose new or changed configuration options.
 
-    Respond with the COMPLETE updated file contents in fenced code blocks:
+    RESPONSE FORMAT (JSON only, no other text):
+    {
+      "changes_needed": true/false,
+      "server_py_changes": {
+        "needed": true/false,
+        "description": "Description of changes needed",
+        "modified_code": "full modified server.py content if needed, null otherwise"
+      },
+      "index_html_changes": {
+        "needed": true/false,
+        "description": "Description of changes needed", 
+        "modified_code": "full modified index.html content if needed, null otherwise"
+      },
+      "new_config_options": ["list of new config options detected"],
+      "removed_config_options": ["list of removed/deprecated config options"],
+      "summary": "Brief summary of changes"
+    }
 
-    ```python
-    # === server.py ===
-    <full file contents>
-    ```
-
-    ```html
-    <!-- === index.html === -->
-    <full file contents>
-    ```
-
-    CRITICAL: Output the COMPLETE files, not partial diffs.
+    GUIDELINES:
+    1. Only suggest changes if NEW configuration options exist in upstream that aren't exposed in the web UI
+    2. Maintain the existing code style and structure
+    3. Ensure Alpine.js bindings are correct in HTML
+    4. Preserve all existing functionality
+    5. Use appropriate input types (password for secrets, checkbox for booleans, etc.)
+    6. Group related settings logically
+    7. DO NOT remove existing configuration options even if not in upstream
+    8. The server.py default_config() function should include defaults for new options
+    9. SECRET_FIELDS set should include any new secret fields
 """)
 
 
-def build_user_prompt(
-    upstream_json: str,
-    diff_summary: dict,
+
+def generate_llm_prompt(
+    analysis: dict,
     server_src: str,
     index_src: str,
 ) -> str:
     return textwrap.dedent(f"""\
-        ## Upstream config.example.json
+        Analyze the PicoClaw configuration files for necessary updates.
 
+        ## Upstream Configuration Schema
         ```json
-        {upstream_json}
-        ```
-
-        ## Structural diff (what changed upstream vs. current defaults)
-
-        ```json
-        {json.dumps(diff_summary, indent=2)}
+        {json.dumps(analysis['upstream_config'], indent=2)}
         ```
 
         ## Current server.py
-
         ```python
         {server_src}
         ```
 
         ## Current templates/index.html
-
         ```html
         {index_src}
         ```
 
-        Please update both files so they fully reflect the upstream configuration.
+        ## Analysis Summary
+        - Known fields in current implementation: {sorted(analysis['known_fields'])}
+        - Fields in upstream config: {sorted(analysis['upstream_keys'])}
+        - Potentially new fields: {sorted(analysis['new_keys'])}
+
+        Determine if updates are needed to expose any new configuration options in the web management console. Return ONLY valid JSON.
     """)
 
 
 def call_llm(api_key: str, system: str, user: str) -> str:
-    """Call the z.ai chat completions API with retry and backoff."""
+    """Call the LLM chat completions API with retry and backoff."""
     headers = {
         "Content-Type": "application/json",
         "Authorization": f"Bearer {api_key}",
@@ -269,16 +284,7 @@ def call_llm(api_key: str, system: str, user: str) -> str:
 # ---------------------------------------------------------------------------
 
 
-def extract_fenced_block(text: str, language: str) -> str | None:
-    """Extract the content of a fenced code block for the given language."""
-    pattern = rf"```{re.escape(language)}\s*\n(.*?)```"
-    m = re.search(pattern, text, re.DOTALL)
-    return m.group(1).strip() if m else None
 
-
-# ---------------------------------------------------------------------------
-# Validation
-# ---------------------------------------------------------------------------
 
 
 def validate_python(src: str) -> list[str]:
@@ -330,9 +336,9 @@ def validate_html(src: str) -> list[str]:
 
 
 def main() -> int:
-    api_key = os.environ.get("ZHIPU_API_KEY", "").strip()
+    api_key = os.environ.get("LLM_API_KEY", "").strip()
     if not api_key:
-        log("ERROR: ZHIPU_API_KEY environment variable is not set")
+        log("ERROR: LLM_API_KEY environment variable is not set")
         return 1
 
     upstream_ref = os.environ.get("UPSTREAM_VERSION", "main").strip() or "main"
@@ -365,82 +371,100 @@ def main() -> int:
         log(f"ERROR: {e}")
         return 1
 
-    # --- Diff -----------------------------------------------------------
+    # --- Analysis -------------------------------------------------------
     current_config = extract_default_config_json(server_src)
     if current_config is None:
         log("WARNING: Could not extract default_config() from server.py; sending full context to LLM")
-        diff_summary = {"note": "Could not parse current defaults; full analysis required"}
+        # Ensure we have a valid structure even if current defaults extraction fails
+        analysis = {
+            "upstream_config": upstream_config,
+            "known_fields": [],
+            "upstream_keys": list(upstream_config.keys()),
+            "new_keys": list(upstream_config.keys())
+        }
     else:
-        diff_summary = structural_diff(upstream_config, current_config)
-        if not diff_summary["added"] and not diff_summary["removed"] and not diff_summary["changed"]:
-            log("No config differences detected — nothing to do")
+        analysis = get_config_analysis(upstream_config, current_config)
+        if not analysis["new_keys"]:
+            log("No new config keys detected — nothing to do")
             set_output("config_changed", "false")
             set_output("files_updated", "false")
             return 0
 
-    log(f"Config diff: +{len(diff_summary.get('added', {}))} added, "
-        f"-{len(diff_summary.get('removed', {}))} removed, "
-        f"~{len(diff_summary.get('changed', {}))} changed")
+    log(f"Config analysis: {len(analysis['new_keys'])} new keys found: {analysis['new_keys']}")
     set_output("config_changed", "true")
 
     # --- Call LLM -------------------------------------------------------
-    user_prompt = build_user_prompt(upstream_json_str, diff_summary, server_src, index_src)
+    user_prompt = generate_llm_prompt(analysis, server_src, index_src)
 
     try:
         response = call_llm(api_key, SYSTEM_PROMPT, user_prompt)
     except Exception as e:
         log(f"ERROR: LLM call failed: {e}")
+        with open("latest_llm_error.txt", "w", encoding="utf-8") as f:
+            f.write(str(e))
+        log("Saved error details to latest_llm_error.txt")
         log("Continuing build without config updates (fail-open)")
         set_output("files_updated", "false")
         return 0
 
-    # --- Check for no-change signal ------------------------------------
-    if "NO_CHANGES_NEEDED" in response:
+    # --- Parse Response -------------------------------------------------
+    result = extract_json_from_response(response)
+    if not result:
+        log("ERROR: Could not parse LLM response as JSON")
+        log("Response preview (first 500 chars):")
+        log(response[:500])
+        set_output("files_updated", "false")
+        return 0
+
+    if not result.get("changes_needed", False):
         log("LLM determined no changes are needed")
         set_output("files_updated", "false")
         return 0
+    
+    # --- Apply Changes --------------------------------------------------
+    files_modified = False
+    
+    # Apply server.py changes
+    server_changes = result.get("server_py_changes", {})
+    if server_changes.get("needed") and server_changes.get("modified_code"):
+        new_server = server_changes["modified_code"]
+        py_errors = validate_python(new_server)
+        if not py_errors:
+            write_file(SERVER_PY, new_server)
+            log(f"Updated server.py: {server_changes.get('description')}")
+            files_modified = True
+        else:
+            log("Python validation FAILED for suggested server.py changes:")
+            for err in py_errors:
+                log(f"  • {err}")
+    
+    # Apply index.html changes
+    html_changes = result.get("index_html_changes", {})
+    if html_changes.get("needed") and html_changes.get("modified_code"):
+        new_index = html_changes["modified_code"]
+        html_errors = validate_html(new_index)
+        if not html_errors:
+            write_file(INDEX_HTML, new_index)
+            log(f"Updated index.html: {html_changes.get('description')}")
+            files_modified = True
+        else:
+            log("HTML validation FAILED for suggested index.html changes:")
+            for err in html_errors:
+                log(f"  • {err}")
 
-    # --- Extract file contents ------------------------------------------
-    new_server = extract_fenced_block(response, "python")
-    new_index = extract_fenced_block(response, "html")
+    # Log new/removed options
+    new_options = result.get("new_config_options", [])
+    if new_options:
+        log(f"New config options detected by LLM: {new_options}")
+    
+    files_updated_str = "true" if files_modified else "false"
+    set_output("files_updated", files_updated_str)
+    
+    if files_modified:
+        log("Done — files updated successfully")
+    else:
+        log("Done — no files were updated (validation failed or no changes provided)")
 
-    if new_server is None or new_index is None:
-        log("WARNING: Could not extract both files from LLM response")
-        log("Response preview (first 500 chars):")
-        log(response[:500])
-        log("Continuing build without config updates (fail-open)")
-        set_output("files_updated", "false")
-        return 0
-
-    # Narrow types — guaranteed non-None by the guard above
-    assert new_server is not None
-    assert new_index is not None
-
-    # --- Validate -------------------------------------------------------
-    py_errors = validate_python(new_server)
-    if py_errors:
-        log("Python validation FAILED:")
-        for err in py_errors:
-            log(f"  • {err}")
-        log("Continuing build without config updates (fail-open)")
-        set_output("files_updated", "false")
-        return 0
-
-    html_errors = validate_html(new_index)
-    if html_errors:
-        log("HTML validation FAILED:")
-        for err in html_errors:
-            log(f"  • {err}")
-        log("Continuing build without config updates (fail-open)")
-        set_output("files_updated", "false")
-        return 0
-
-    # --- Write files ----------------------------------------------------
-    log("Validation passed — writing updated files")
-    write_file(SERVER_PY, new_server)
-    write_file(INDEX_HTML, new_index)
-    set_output("files_updated", "true")
-    log("Done — files updated successfully")
     return 0
 
 

@@ -41,7 +41,7 @@ jobs:
       - name: Validate and update config UI
         id: config_validation
         env:
-          ZHIPU_API_KEY: ${{ secrets.ZHIPU_API_KEY }}
+          LLM_API_KEY: ${{ secrets.LLM_API_KEY }}
           UPSTREAM_VERSION: ${{ github.event.client_payload.version || github.event.inputs.version }}
         run: python .github/scripts/validate_config.py
 
