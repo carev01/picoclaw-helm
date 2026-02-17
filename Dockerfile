@@ -49,7 +49,7 @@ COPY --chown=${PICOCLAW_UID}:${PICOCLAW_UID} requirements.txt ${APP_HOME}/requir
 RUN uv pip install --system --no-cache -r ${APP_HOME}/requirements.txt
 
 # Copy application files
-COPY --chown=${PICOCLAW_UID}:${PICOCLAW_UID} server.py start.sh ${APP_HOME}/
+COPY --chown=${PICOCLAW_UID}:${PICOCLAW_UID} server.py start.sh templates ${APP_HOME}/
 RUN chmod +x ${APP_HOME}/start.sh
 
 WORKDIR ${APP_HOME}
