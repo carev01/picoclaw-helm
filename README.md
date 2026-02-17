@@ -349,15 +349,24 @@ Contributions are welcome! Please feel free to submit issues and pull requests.
 │       └── helm-pages-deploy.yml   # Deploy to GitHub Pages
 ├── charts/
 │   └── picoclaw/
-│       ├── Chart.yaml
-│       ├── values.yaml
-│       └── templates/
+│       ├── Chart.yaml              # Helm chart definition
+│       ├── values.yaml             # Helm chart default values and config reference
+│       └── templates/              # Helm chart templates for the required Kubernetes artifacts
 │           ├── deployment.yaml
-│           ├── service.yaml
-│           ├── configmap.yaml
-│           ├── secret.yaml
+│           ├── ingress.yaml
 │           ├── pvc.yaml
+│           ├── secret.yaml
+│           ├── service.yaml
+│           ├── serviceaccount.yaml
 │           └── _helpers.tpl
+├── templates/
+│   └── index.html        # Template for the web management console interface
+├── .last-build-version   # Last upstream PicoClaw version built
+
+├── Dockerfile        # Builds PicoClaw on top of a python-trixie image with common system utilities and python libraries for better AI agent autonomy
+├── requirements.txt  # Requirements for the Python-based web management console
+├── server.py         # Web management console based on Starlette with basic authentication built-in
+├── start.sh          # Container start script
 └── README.md
 ```
 
