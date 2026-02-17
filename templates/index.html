@@ -71,6 +71,13 @@
                            @input="setProvider(p.key, 'api_base', $event.target.value)"
                            :placeholder="p.basePlaceholder || 'Optional'">
                   </div>
+                  <div x-show="p.hasProxy">
+                    <label class="block text-xs text-gray-500 mb-1">Proxy</label>
+                    <input type="text" class="w-full bg-gray-100 border border-gray-300 dark:bg-gray-800 dark:border-gray-700 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-blue-500"
+                           :value="getProvider(p.key, 'proxy')"
+                           @input="setProvider(p.key, 'proxy', $event.target.value)"
+                           placeholder="http://127.0.0.1:7890">
+                  </div>
                 </div>
               </div>
             </template>
@@ -293,6 +300,45 @@
               </div>
             </div>
 
+            <div class="bg-white border border-gray-200 dark:bg-gray-900 dark:border-gray-800 rounded-xl p-4">
+              <div class="flex items-center justify-between mb-3">
+                <h3 class="font-medium">OneBot</h3>
+                <label class="flex items-center gap-2 cursor-pointer">
+                  <input type="checkbox" class="rounded bg-gray-100 border-gray-300 dark:bg-gray-800 dark:border-gray-600" x-model="config.channels.onebot.enabled">
+                  <span class="text-xs text-gray-500 dark:text-gray-400">Enabled</span>
+                </label>
+              </div>
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-3" x-show="config.channels.onebot.enabled">
+                <div>
+                  <label class="block text-xs text-gray-500 mb-1">WebSocket URL</label>
+                  <input type="text" class="w-full bg-gray-100 border border-gray-300 dark:bg-gray-800 dark:border-gray-700 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-blue-500"
+                         x-model="config.channels.onebot.ws_url" placeholder="ws://127.0.0.1:3001">
+                </div>
+                <div>
+                  <label class="block text-xs text-gray-500 mb-1">Access Token</label>
+                  <input type="password" class="w-full bg-gray-100 border border-gray-300 dark:bg-gray-800 dark:border-gray-700 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-blue-500"
+                         x-model="config.channels.onebot.access_token">
+                </div>
+                <div>
+                  <label class="block text-xs text-gray-500 mb-1">Reconnect Interval (seconds)</label>
+                  <input type="number" class="w-full bg-gray-100 border border-gray-300 dark:bg-gray-800 dark:border-gray-700 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-blue-500"
+                         x-model.number="config.channels.onebot.reconnect_interval">
+                </div>
+                <div>
+                  <label class="block text-xs text-gray-500 mb-1">Group Trigger Prefixes (comma-separated)</label>
+                  <input type="text" class="w-full bg-gray-100 border border-gray-300 dark:bg-gray-800 dark:border-gray-700 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-blue-500"
+                         :value="(config.channels.onebot.group_trigger_prefix || []).join(', ')"
+                         @input="config.channels.onebot.group_trigger_prefix = $event.target.value.split(',').map(s => s.trim()).filter(Boolean)">
+                </div>
+                <div class="md:col-span-2">
+                  <label class="block text-xs text-gray-500 mb-1">Allowed Users (comma-separated)</label>
+                  <input type="text" class="w-full bg-gray-100 border border-gray-300 dark:bg-gray-800 dark:border-gray-700 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-blue-500"
+                         :value="(config.channels.onebot.allow_from || []).join(', ')"
+                         @input="config.channels.onebot.allow_from = $event.target.value.split(',').map(s => s.trim()).filter(Boolean)">
+                </div>
+              </div>
+            </div>
+
           </div>
         </section>
 
@@ -301,14 +347,26 @@
           <div class="bg-white border border-gray-200 dark:bg-gray-900 dark:border-gray-800 rounded-xl p-4">
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
-                <label class="block text-xs text-gray-500 mb-1">Brave Search API Key</label>
+                <label class="flex items-center gap-2 mb-2">
+                  <input type="checkbox" class="rounded bg-gray-100 border-gray-300 dark:bg-gray-800 dark:border-gray-600" x-model="config.tools.web.brave.enabled">
+                  <span class="text-sm text-gray-500 dark:text-gray-400">Brave Search</span>
+                </label>
                 <input type="password" class="w-full bg-gray-100 border border-gray-300 dark:bg-gray-800 dark:border-gray-700 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-blue-500"
                        x-model="config.tools.web.brave.api_key" placeholder="Enter Brave Search API key">
               </div>
-              <div class="flex items-center gap-2">
-                <input type="checkbox" class="rounded bg-gray-100 border-gray-300 dark:bg-gray-800 dark:border-gray-600" x-model="config.tools.web.duckduckgo.enabled">
-                <label class="text-sm text-gray-500 dark:text-gray-400">DuckDuckGo Search</label>
+              <div>
+                <label class="flex items-center gap-2 mb-2">
+                  <input type="checkbox" class="rounded bg-gray-100 border-gray-300 dark:bg-gray-800 dark:border-gray-600" x-model="config.tools.web.perplexity.enabled">
+                  <span class="text-sm text-gray-500 dark:text-gray-400">Perplexity Search</span>
+                </label>
+                <input type="password" class="w-full bg-gray-100 border border-gray-300 dark:bg-gray-800 dark:border-gray-700 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-blue-500"
+                       x-model="config.tools.web.perplexity.api_key" placeholder="Enter Perplexity API key">
               </div>
+            </div>
+            <div class="mt-4 pt-4 border-t border-gray-200 dark:border-gray-700">
+              <label class="block text-xs text-gray-500 mb-1">Cron Job Timeout (minutes)</label>
+              <input type="number" class="w-full md:w-48 bg-gray-100 border border-gray-300 dark:bg-gray-800 dark:border-gray-700 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-blue-500"
+                     x-model.number="config.tools.cron.exec_timeout_minutes">
             </div>
           </div>
         </section>
@@ -463,16 +521,16 @@
         toast: { show: false, message: '', type: 'success' },
 
         providerList: [
-          { key: 'anthropic', label: 'Anthropic', hasBase: false },
+          { key: 'anthropic', label: 'Anthropic', hasBase: true, basePlaceholder: 'Optional' },
           { key: 'openai', label: 'OpenAI', hasBase: true, basePlaceholder: 'https://api.openai.com/v1' },
           { key: 'openrouter', label: 'OpenRouter', hasBase: true, basePlaceholder: 'https://openrouter.ai/api/v1' },
-          { key: 'deepseek', label: 'DeepSeek', hasBase: false },
-          { key: 'groq', label: 'Groq', hasBase: false },
-          { key: 'gemini', label: 'Gemini', hasBase: false },
-          { key: 'zhipu', label: 'Zhipu', hasBase: true },
-          { key: 'moonshot', label: 'Moonshot', hasBase: false },
-          { key: 'nvidia', label: 'NVIDIA', hasBase: true, basePlaceholder: 'Optional' },
+          { key: 'groq', label: 'Groq', hasBase: true, basePlaceholder: 'Optional' },
+          { key: 'zhipu', label: 'Zhipu', hasBase: true, basePlaceholder: 'Optional' },
+          { key: 'gemini', label: 'Gemini', hasBase: true, basePlaceholder: 'Optional' },
           { key: 'vllm', label: 'vLLM', hasBase: true, basePlaceholder: 'http://localhost:8000/v1' },
+          { key: 'nvidia', label: 'NVIDIA', hasBase: true, basePlaceholder: 'Optional', hasProxy: true },
+          { key: 'moonshot', label: 'Moonshot', hasBase: true, basePlaceholder: 'Optional' },
+          { key: 'ollama', label: 'Ollama', hasBase: true, basePlaceholder: 'http://localhost:11434/v1' },
         ],
 
         getProvider(key, field) {
@@ -595,30 +653,30 @@
         channels: {
           telegram: { enabled: false, token: '', proxy: '', allow_from: [] },
           discord: { enabled: false, token: '', allow_from: [] },
-          slack: { enabled: false, bot_token: '', app_token: '', allow_from: [] },
+          maixcam: { enabled: false, host: '0.0.0.0', port: 18790, allow_from: [] },
           whatsapp: { enabled: false, bridge_url: 'ws://localhost:3001', allow_from: [] },
           feishu: { enabled: false, app_id: '', app_secret: '', encrypt_key: '', verification_token: '', allow_from: [] },
           dingtalk: { enabled: false, client_id: '', client_secret: '', allow_from: [] },
-          qq: { enabled: false, app_id: '', app_secret: '', allow_from: [] },
+          slack: { enabled: false, bot_token: '', app_token: '', allow_from: [] },
           line: { enabled: false, channel_secret: '', channel_access_token: '', webhook_host: '0.0.0.0', webhook_port: 18791, webhook_path: '/webhook/line', allow_from: [] },
-          maixcam: { enabled: false, host: '0.0.0.0', port: 18790, allow_from: [] },
+          onebot: { enabled: false, ws_url: 'ws://127.0.0.1:3001', access_token: '', reconnect_interval: 5, group_trigger_prefix: [], allow_from: [] },
         },
         providers: {
-          anthropic: { api_key: '' },
+          anthropic: { api_key: '', api_base: '' },
           openai: { api_key: '', api_base: '' },
-          openrouter: { api_key: '' },
-          deepseek: { api_key: '' },
-          groq: { api_key: '' },
-          gemini: { api_key: '' },
+          openrouter: { api_key: '', api_base: '' },
+          groq: { api_key: '', api_base: '' },
           zhipu: { api_key: '', api_base: '' },
+          gemini: { api_key: '', api_base: '' },
           vllm: { api_key: '', api_base: '' },
-          nvidia: { api_key: '', api_base: '' },
-          moonshot: { api_key: '' },
+          nvidia: { api_key: '', api_base: '', proxy: '' },
+          moonshot: { api_key: '', api_base: '' },
+          ollama: { api_key: '', api_base: 'http://localhost:11434/v1' },
         },
         gateway: { host: '0.0.0.0', port: 18790 },
-        tools: { web: { brave: { enabled: false, api_key: '', max_results: 5 }, duckduckgo: { enabled: true, max_results: 5 } } },
+        tools: { web: { brave: { enabled: false, api_key: '', max_results: 5 }, perplexity: { enabled: false, api_key: '', max_results: 5 } }, cron: { exec_timeout_minutes: 5 } },
         heartbeat: { enabled: true, interval: 30 },
-        devices: { enabled: false, monitor_usb: false },
+        devices: { enabled: false, monitor_usb: true },
       };
     }
 
