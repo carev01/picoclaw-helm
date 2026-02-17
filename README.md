@@ -300,6 +300,7 @@ This repository uses several automated workflows:
 
 ### 2. Docker Build & Push (`build_and_push.yml`)
 
+- Automatically refactors (with LLM) server.py and templates/index.html to expose new configuration knobs added to upstream PicoClaw's config.json
 - Builds multi-platform Docker images (amd64, arm64)
 - Pushes to GitHub Container Registry
 - Tags both version and `latest`
@@ -343,6 +344,8 @@ Contributions are welcome! Please feel free to submit issues and pull requests.
 ```
 .
 ├── .github/
+│   ├── scripts/
+│       └── validate_config.py      # Python script invoked during build process to request LLM to update server.py and templates/index.html based on new knobs in PicoClaw's config.json
 │   └── workflows/
 │       ├── check_upstream.yml      # Monitor upstream releases
 │       ├── build_and_push.yml      # Build Docker images
