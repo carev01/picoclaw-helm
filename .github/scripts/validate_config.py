@@ -30,8 +30,7 @@ import urllib.request
 
 API_URL = "https://openrouter.ai/api/v1/chat/completions"
 MODEL = "qwen/qwen3-coder-next"
-MAX_TOKENS = 16384
-TEMPERATURE = 0.1
+MAX_TOKENS = 32768
 
 MAX_RETRIES = 3
 INITIAL_BACKOFF_S = 5       # 5 → 15 → 45
@@ -228,7 +227,6 @@ def call_llm(api_key: str, system: str, user: str) -> str:
     }
     payload = json.dumps({
         "model": MODEL,
-        "temperature": TEMPERATURE,
         "max_tokens": MAX_TOKENS,
         "messages": [
             {"role": "system", "content": system},
