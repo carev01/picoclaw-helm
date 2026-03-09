@@ -29,8 +29,7 @@ import urllib.request
 # ---------------------------------------------------------------------------
 
 API_URL = "https://openrouter.ai/api/v1/chat/completions"
-MODEL = "qwen/qwen3-coder-next"
-MAX_TOKENS = 32768
+MODEL = "minimax/minimax-m2.5"
 
 MAX_RETRIES = 3
 INITIAL_BACKOFF_S = 5       # 5 → 15 → 45
