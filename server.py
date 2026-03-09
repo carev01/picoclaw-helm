@@ -30,6 +30,8 @@ SECRET_FIELDS = {
     "channel_secret", "channel_access_token", "client_secret",
     "corp_secret", "access_token", "session_store_path",
     "webhook_url", "encoding_aes_key", "client_id", "corp_id",
+    "device_id", "homeserver", "nickserv_password", "sasl_password",
+    "password", "real_name", "sasl_user", "user",
 }
 
 CONFIG_DIR = Path(os.environ.get("PICOCLAW_HOME", Path.home() / ".picoclaw"))
@@ -96,27 +98,30 @@ def default_config():
             "defaults": {
                 "workspace": "~/.picoclaw/workspace",
                 "restrict_to_workspace": True,
-                "provider": "",
-                "model": "glm-4.7",
+                "model_name": "gpt4",
                 "max_tokens": 8192,
                 "temperature": 0.7,
                 "max_tool_iterations": 20,
-                "model_name": "gpt4"
+                "summarize_message_threshold": 20,
+                "summarize_token_percent": 75
             }
         },
         "channels": {
-            "telegram": {"enabled": False, "token": "", "proxy": "", "allow_from": [], "reasoning_channel_id": ""},
-            "discord": {"enabled": False, "token": "", "allow_from": [], "mention_only": False, "reasoning_channel_id": ""},
+            "telegram": {"enabled": False, "token": "", "base_url": "", "proxy": "", "allow_from": [], "reasoning_channel_id": ""},
+            "discord": {"enabled": False, "token": "", "proxy": "", "allow_from": [], "group_trigger": {"mention_only": False}, "reasoning_channel_id": ""},
             "slack": {"enabled": False, "bot_token": "", "app_token": "", "allow_from": [], "reasoning_channel_id": ""},
             "whatsapp": {"enabled": False, "bridge_url": "ws://localhost:3001", "use_native": False, "session_store_path": "", "allow_from": [], "reasoning_channel_id": ""},
-            "feishu": {"enabled": False, "app_id": "", "app_secret": "", "encrypt_key": "", "verification_token": "", "allow_from": [], "reasoning_channel_id": ""},
+            "feishu": {"enabled": False, "app_id": "", "app_secret": "", "encrypt_key": "", "verification_token": "", "allow_from": [], "reasoning_channel_id": "", "random_reaction_emoji": []},
             "dingtalk": {"enabled": False, "client_id": "", "client_secret": "", "allow_from": [], "reasoning_channel_id": ""},
             "qq": {"enabled": False, "app_id": "", "app_secret": "", "allow_from": [], "reasoning_channel_id": ""},
-            "line": {"enabled": False, "channel_secret": "", "channel_access_token": "", "webhook_host": "0.0.0.0", "webhook_port": 18791, "webhook_path": "/webhook/line", "allow_from": [], "reasoning_channel_id": ""},
+            "line": {"enabled": False, "channel_secret": "", "channel_access_token": "", "webhook_path": "/webhook/line", "allow_from": [], "reasoning_channel_id": ""},
             "maixcam": {"enabled": False, "host": "0.0.0.0", "port": 18790, "allow_from": [], "reasoning_channel_id": ""},
             "onebot": {"enabled": False, "ws_url": "ws://127.0.0.1:3001", "access_token": "", "reconnect_interval": 5, "group_trigger_prefix": [], "allow_from": [], "reasoning_channel_id": ""},
-            "wecom": {"enabled": False, "token": "", "encoding_aes_key": "", "webhook_url": "https://qyapi.weixin.qq.com/cgi-bin/webhook/send?key=YOUR_KEY", "webhook_host": "0.0.0.0", "webhook_port": 18793, "webhook_path": "/webhook/wecom", "allow_from": [], "reply_timeout": 5, "reasoning_channel_id": ""},
-            "wecom_app": {"enabled": False, "corp_id": "", "corp_secret": "", "agent_id": 1000002, "token": "", "encoding_aes_key": "", "webhook_host": "0.0.0.0", "webhook_port": 18792, "webhook_path": "/webhook/wecom-app", "allow_from": [], "reply_timeout": 5, "reasoning_channel_id": ""}
+            "wecom": {"enabled": False, "token": "", "encoding_aes_key": "", "webhook_url": "https://qyapi.weixin.qq.com/cgi-bin/webhook/send?key=YOUR_KEY", "webhook_path": "/webhook/wecom", "allow_from": [], "reply_timeout": 5, "reasoning_channel_id": ""},
+            "wecom_app": {"enabled": False, "corp_id": "", "corp_secret": "", "agent_id": 1000002, "token": "", "encoding_aes_key": "", "webhook_path": "/webhook/wecom-app", "allow_from": [], "reply_timeout": 5, "reasoning_channel_id": ""},
+            "wecom_aibot": {"enabled": False, "token": "", "encoding_aes_key": "", "webhook_path": "/webhook/wecom-aibot", "max_steps": 10, "welcome_message": "Hello! I'm your AI assistant. How can I help you today?", "reasoning_channel_id": ""},
+            "matrix": {"enabled": False, "homeserver": "https://matrix.org", "user_id": "", "access_token": "", "device_id": "", "join_on_invite": True, "allow_from": [], "group_trigger": {"mention_only": True}, "placeholder": {"enabled": True, "text": "Thinking... \ud83d\udcad"}, "reasoning_channel_id": ""},
+            "irc": {"enabled": False, "server": "irc.libera.chat:6697", "tls": True, "nick": "mybot", "user": "", "real_name": "", "password": "", "nickserv_password": "", "sasl_user": "", "sasl_password": "", "channels": ["#mychannel"], "request_caps": ["server-time", "message-tags"], "allow_from": [], "group_trigger": {"mention_only": True}, "typing": {"enabled": False}, "reasoning_channel_id": ""}
         },
         "model_list": [],
         "providers": {
@@ -133,32 +138,59 @@ def default_config():
             "cerebras": {"api_key": "", "api_base": ""},
             "volcengine": {"api_key": "", "api_base": ""},
             "mistral": {"api_key": "", "api_base": "https://api.mistral.ai/v1"},
-            "qwen": {"api_key": "", "api_base": ""}
+            "qwen": {"api_key": "", "api_base": ""},
+            "avian": {"api_key": "", "api_base": "https://api.avian.io/v1"}
         },
-        "gateway": {"host": "0.0.0.0", "port": 18790},
+        "gateway": {"host": "127.0.0.1", "port": 18790},
         "tools": {
             "web": {
+                "enabled": True,
                 "brave": {"enabled": False, "api_key": "", "max_results": 5},
+                "tavily": {"enabled": False, "api_key": "", "base_url": "", "max_results": 0},
                 "duckduckgo": {"enabled": True, "max_results": 5},
                 "perplexity": {"enabled": False, "api_key": "", "max_results": 5},
-                "proxy": ""
+                "searxng": {"enabled": False, "base_url": "http://localhost:8888", "max_results": 5},
+                "glm_search": {"enabled": False, "api_key": "", "base_url": "https://open.bigmodel.cn/api/paas/v4/web_search", "search_engine": "search_std", "max_results": 5},
+                "fetch_limit_bytes": 10485760
             },
-            "cron": {"exec_timeout_minutes": 5},
-            "exec": {"enable_deny_patterns": False, "custom_deny_patterns": []},
+            "cron": {"enabled": True, "exec_timeout_minutes": 5},
+            "exec": {"enabled": True, "enable_deny_patterns": True, "custom_deny_patterns": None, "custom_allow_patterns": None},
             "skills": {
+                "enabled": True,
+                "max_concurrent_searches": 2,
+                "search_cache": {"max_size": 50, "ttl_seconds": 300},
                 "registries": {
                     "clawhub": {
                         "enabled": True,
                         "base_url": "https://clawhub.ai",
+                        "auth_token": "",
                         "search_path": "/api/v1/search",
                         "skills_path": "/api/v1/skills",
-                        "download_path": "/api/v1/download"
+                        "download_path": "/api/v1/download",
+                        "timeout": 0,
+                        "max_zip_size": 0,
+                        "max_response_size": 0
                     }
                 }
-            }
+            },
+            "media_cleanup": {"enabled": True, "max_age_minutes": 30, "interval_minutes": 5},
+            "mcp": {"enabled": False, "servers": {}},
+            "append_file": {"enabled": True},
+            "edit_file": {"enabled": True},
+            "find_skills": {"enabled": True},
+            "i2c": {"enabled": False},
+            "install_skill": {"enabled": True},
+            "list_dir": {"enabled": True},
+            "message": {"enabled": True},
+            "read_file": {"enabled": True},
+            "spawn": {"enabled": True},
+            "spi": {"enabled": False},
+            "subagent": {"enabled": True},
+            "web_fetch": {"enabled": True},
+            "write_file": {"enabled": True}
         },
         "heartbeat": {"enabled": True, "interval": 30},
-        "devices": {"enabled": False, "monitor_usb": False},
+        "devices": {"enabled": False, "monitor_usb": True},
     }
 
 
