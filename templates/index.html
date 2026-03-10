@@ -890,12 +890,200 @@
           </div>
         </section>
 
+        <section>
+          <h2 class="text-lg font-semibold mb-3">MCP Servers</h2>
+          <div class="bg-white border border-gray-200 dark:bg-gray-900 dark:border-gray-800 rounded-xl p-4">
+            <div class="mb-4 pb-4 border-b border-gray-200 dark:border-gray-700">
+              <h3 class="font-medium mb-3">MCP Discovery</h3>
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                <div class="flex items-center gap-2">
+                  <input type="checkbox" class="rounded bg-gray-100 border-gray-300 dark:bg-gray-800 dark:border-gray-600"
+                         x-model="config.tools.mcp.discovery.enabled">
+                  <span class="text-sm text-gray-500">Enable Discovery</span>
+                </div>
+                <div>
+                  <label class="block text-xs text-gray-500 mb-1">TTL (minutes)</label>
+                  <input type="number" class="w-full bg-gray-100 border border-gray-300 dark:bg-gray-800 dark:border-gray-700 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-blue-500"
+                         x-model.number="config.tools.mcp.discovery.ttl">
+                </div>
+                <div>
+                  <label class="block text-xs text-gray-500 mb-1">Max Search Results</label>
+                  <input type="number" class="w-full bg-gray-100 border border-gray-300 dark:bg-gray-800 dark:border-gray-700 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-blue-500"
+                         x-model.number="config.tools.mcp.discovery.max_search_results">
+                </div>
+                <div class="flex items-center gap-2">
+                  <input type="checkbox" class="rounded bg-gray-100 border-gray-300 dark:bg-gray-800 dark:border-gray-600"
+                         x-model="config.tools.mcp.discovery.use_bm25">
+                  <span class="text-sm text-gray-500">Use BM25</span>
+                </div>
+                <div class="flex items-center gap-2">
+                  <input type="checkbox" class="rounded bg-gray-100 border-gray-300 dark:bg-gray-800 dark:border-gray-600"
+                         x-model="config.tools.mcp.discovery.use_regex">
+                  <span class="text-sm text-gray-500">Use Regex</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="space-y-4">
+              <div>
+                <label class="flex items-center gap-2 mb-2">
+                  <input type="checkbox" class="rounded bg-gray-100 border-gray-300 dark:bg-gray-800 dark:border-gray-600"
+                         x-model="config.tools.mcp.servers.context7.enabled">
+                  <span class="text-sm text-gray-500 dark:text-gray-400">Context7</span>
+                </label>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-2 ml-6" x-show="config.tools.mcp.servers.context7.enabled">
+                  <div>
+                    <label class="block text-xs text-gray-500 mb-1">Type</label>
+                    <input type="text" class="w-full bg-gray-100 border border-gray-300 dark:bg-gray-800 dark:border-gray-700 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-blue-500"
+                           x-model="config.tools.mcp.servers.context7.type">
+                  </div>
+                  <div>
+                    <label class="block text-xs text-gray-500 mb-1">URL</label>
+                    <input type="text" class="w-full bg-gray-100 border border-gray-300 dark:bg-gray-800 dark:border-gray-700 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-blue-500"
+                           x-model="config.tools.mcp.servers.context7.url">
+                  </div>
+                  <div>
+                    <label class="block text-xs text-gray-500 mb-1">API Key</label>
+                    <input type="password" class="w-full bg-gray-100 border border-gray-300 dark:bg-gray-800 dark:border-gray-700 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-blue-500"
+                           x-model="config.tools.mcp.servers.context7.headers.CONTEXT7_API_KEY">
+                  </div>
+                </div>
+              </div>
+
+              <div>
+                <label class="flex items-center gap-2 mb-2">
+                  <input type="checkbox" class="rounded bg-gray-100 border-gray-300 dark:bg-gray-800 dark:border-gray-600"
+                         x-model="config.tools.mcp.servers.filesystem.enabled">
+                  <span class="text-sm text-gray-500 dark:text-gray-400">Filesystem</span>
+                </label>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-2 ml-6" x-show="config.tools.mcp.servers.filesystem.enabled">
+                  <div>
+                    <label class="block text-xs text-gray-500 mb-1">Command</label>
+                    <input type="text" class="w-full bg-gray-100 border border-gray-300 dark:bg-gray-800 dark:border-gray-700 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-blue-500"
+                           x-model="config.tools.mcp.servers.filesystem.command">
+                  </div>
+                  <div class="md:col-span-2">
+                    <label class="block text-xs text-gray-500 mb-1">Arguments (comma-separated)</label>
+                    <input type="text" class="w-full bg-gray-100 border border-gray-300 dark:bg-gray-800 dark:border-gray-700 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-blue-500"
+                           :value="(config.tools.mcp.servers.filesystem.args || []).join(', ')"
+                           @input="config.tools.mcp.servers.filesystem.args = $event.target.value.split(',').map(s => s.trim()).filter(Boolean)">
+                  </div>
+                </div>
+              </div>
+
+              <div>
+                <label class="flex items-center gap-2 mb-2">
+                  <input type="checkbox" class="rounded bg-gray-100 border-gray-300 dark:bg-gray-800 dark:border-gray-600"
+                         x-model="config.tools.mcp.servers.github.enabled">
+                  <span class="text-sm text-gray-500 dark:text-gray-400">GitHub</span>
+                </label>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-2 ml-6" x-show="config.tools.mcp.servers.github.enabled">
+                  <div>
+                    <label class="block text-xs text-gray-500 mb-1">Command</label>
+                    <input type="text" class="w-full bg-gray-100 border border-gray-300 dark:bg-gray-800 dark:border-gray-700 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-blue-500"
+                           x-model="config.tools.mcp.servers.github.command">
+                  </div>
+                  <div class="md:col-span-2">
+                    <label class="block text-xs text-gray-500 mb-1">Arguments (comma-separated)</label>
+                    <input type="text" class="w-full bg-gray-100 border border-gray-300 dark:bg-gray-800 dark:border-gray-700 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-blue-500"
+                           :value="(config.tools.mcp.servers.github.args || []).join(', ')"
+                           @input="config.tools.mcp.servers.github.args = $event.target.value.split(',').map(s => s.trim()).filter(Boolean)">
+                  </div>
+                  <div>
+                    <label class="block text-xs text-gray-500 mb-1">Personal Access Token</label>
+                    <input type="password" class="w-full bg-gray-100 border border-gray-300 dark:bg-gray-800 dark:border-gray-700 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-blue-500"
+                           x-model="config.tools.mcp.servers.github.env.GITHUB_PERSONAL_ACCESS_TOKEN">
+                  </div>
+                </div>
+              </div>
+
+              <div>
+                <label class="flex items-center gap-2 mb-2">
+                  <input type="checkbox" class="rounded bg-gray-100 border-gray-300 dark:bg-gray-800 dark:border-gray-600"
+                         x-model="config.tools.mcp.servers.brave-search.enabled">
+                  <span class="text-sm text-gray-500 dark:text-gray-400">Brave Search (MCP)</span>
+                </label>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-2 ml-6" x-show="config.tools.mcp.servers.brave-search.enabled">
+                  <div>
+                    <label class="block text-xs text-gray-500 mb-1">Command</label>
+                    <input type="text" class="w-full bg-gray-100 border border-gray-300 dark:bg-gray-800 dark:border-gray-700 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-blue-500"
+                           x-model="config.tools.mcp.servers.brave-search.command">
+                  </div>
+                  <div class="md:col-span-2">
+                    <label class="block text-xs text-gray-500 mb-1">Arguments (comma-separated)</label>
+                    <input type="text" class="w-full bg-gray-100 border border-gray-300 dark:bg-gray-800 dark:border-gray-700 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-blue-500"
+                           :value="(config.tools.mcp.servers.brave-search.args || []).join(', ')"
+                           @input="config.tools.mcp.servers.brave-search.args = $event.target.value.split(',').map(s => s.trim()).filter(Boolean)">
+                  </div>
+                  <div>
+                    <label class="block text-xs text-gray-500 mb-1">Brave API Key</label>
+                    <input type="password" class="w-full bg-gray-100 border border-gray-300 dark:bg-gray-800 dark:border-gray-700 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-blue-500"
+                           x-model="config.tools.mcp.servers.brave-search.env.BRAVE_API_KEY">
+                  </div>
+                </div>
+              </div>
+
+              <div>
+                <label class="flex items-center gap-2 mb-2">
+                  <input type="checkbox" class="rounded bg-gray-100 border-gray-300 dark:bg-gray-800 dark:border-gray-600"
+                         x-model="config.tools.mcp.servers.postgres.enabled">
+                  <span class="text-sm text-gray-500 dark:text-gray-400">PostgreSQL</span>
+                </label>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-2 ml-6" x-show="config.tools.mcp.servers.postgres.enabled">
+                  <div>
+                    <label class="block text-xs text-gray-500 mb-1">Command</label>
+                    <input type="text" class="w-full bg-gray-100 border border-gray-300 dark:bg-gray-800 dark:border-gray-700 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-blue-500"
+                           x-model="config.tools.mcp.servers.postgres.command">
+                  </div>
+                  <div class="md:col-span-2">
+                    <label class="block text-xs text-gray-500 mb-1">Arguments (comma-separated)</label>
+                    <input type="text" class="w-full bg-gray-100 border border-gray-300 dark:bg-gray-800 dark:border-gray-700 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-blue-500"
+                           :value="(config.tools.mcp.servers.postgres.args || []).join(', ')"
+                           @input="config.tools.mcp.servers.postgres.args = $event.target.value.split(',').map(s => s.trim()).filter(Boolean)">
+                  </div>
+                </div>
+              </div>
+
+              <div>
+                <label class="flex items-center gap-2 mb-2">
+                  <input type="checkbox" class="rounded bg-gray-100 border-gray-300 dark:bg-gray-800 dark:border-gray-600"
+                         x-model="config.tools.mcp.servers.slack.enabled">
+                  <span class="text-sm text-gray-500 dark:text-gray-400">Slack</span>
+                </label>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-2 ml-6" x-show="config.tools.mcp.servers.slack.enabled">
+                  <div>
+                    <label class="block text-xs text-gray-500 mb-1">Command</label>
+                    <input type="text" class="w-full bg-gray-100 border border-gray-300 dark:bg-gray-800 dark:border-gray-700 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-blue-500"
+                           x-model="config.tools.mcp.servers.slack.command">
+                  </div>
+                  <div class="md:col-span-2">
+                    <label class="block text-xs text-gray-500 mb-1">Arguments (comma-separated)</label>
+                    <input type="text" class="w-full bg-gray-100 border border-gray-300 dark:bg-gray-800 dark:border-gray-700 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-blue-500"
+                           :value="(config.tools.mcp.servers.slack.args || []).join(', ')"
+                           @input="config.tools.mcp.servers.slack.args = $event.target.value.split(',').map(s => s.trim()).filter(Boolean)">
+                  </div>
+                  <div>
+                    <label class="block text-xs text-gray-500 mb-1">Slack Bot Token</label>
+                    <input type="password" class="w-full bg-gray-100 border border-gray-300 dark:bg-gray-800 dark:border-gray-700 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-blue-500"
+                           x-model="config.tools.mcp.servers.slack.env.SLACK_BOT_TOKEN">
+                  </div>
+                  <div>
+                    <label class="block text-xs text-gray-500 mb-1">Slack Team ID</label>
+                    <input type="text" class="w-full bg-gray-100 border border-gray-300 dark:bg-gray-800 dark:border-gray-700 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-blue-500"
+                           x-model="config.tools.mcp.servers.slack.env.SLACK_TEAM_ID">
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
         <div class="flex items-center justify-between bg-white border border-gray-200 dark:bg-gray-900 dark:border-gray-800 rounded-xl p-4">
           <label class="flex items-center gap-2">
             <input type="checkbox" class="rounded bg-gray-100 border-gray-300 dark:bg-gray-800 dark:border-gray-600" x-model="restartAfterSave">
             <span class="text-sm text:text-gray-400">Restart gateway after save</span>
           </label>
-          <button @click="-gray-500 darksaveConfig()" :disabled="saving"
+          <button @click="saveConfig()" :disabled="saving"
                   class="px-5 py-2 bg-blue-600 hover:bg-blue-500 text-white disabled:opacity-50 rounded-lg text-sm font-medium transition">
             <span x-show="!saving">Save Configuration</span>
             <span x-show="saving">Saving...</span>
@@ -1177,8 +1365,8 @@
         channels: {
           telegram: { enabled: false, token: '', base_url: '', proxy: '', allow_from: [], reasoning_channel_id: '' },
           discord: { enabled: false, token: '', proxy: '', allow_from: [], group_trigger: { mention_only: false }, reasoning_channel_id: '' },
-          slack: { enabled: false, bot_token: '', app_token: '', allow_from: [], reasoning_channel,
-          whatsapp: { enabled:_id: '' } false, bridge_url: 'ws://localhost:3001', use_native: false, session_store_path: '', allow_from: [], reasoning_channel_id: '' },
+          slack: { enabled: false, bot_token: '', app_token: '', allow_from: [], reasoning_channel_id: '' },
+          whatsapp: { enabled: false, bridge_url: 'ws://localhost:3001', use_native: false, session_store_path: '', allow_from: [], reasoning_channel_id: '' },
           feishu: { enabled: false, app_id: '', app_secret: '', encrypt_key: '', verification_token: '', allow_from: [], reasoning_channel_id: '', random_reaction_emoji: [] },
           dingtalk: { enabled: false, client_id: '', client_secret: '', allow_from: [], reasoning_channel_id: '' },
           qq: { enabled: false, app_id: '', app_secret: '', allow_from: [], reasoning_channel_id: '' },
@@ -1211,7 +1399,9 @@
         },
         gateway: { host: '127.0.0.1', port: 18790 },
         tools: {
-          web: { enabled: true, brave: { enabled: false, api_key: '', max_results: 5 }, tavily: { enabled: false, api_key: '', base_url: '', max_results: 0 }, duckduckgo: { enabled: true, max_results: 5 }, perplexity: { enabled: false, api_key: '', max_results: 5 }, searxng:, base_url: { enabled: false 'http://localhost:8888', max_results: 5 }, glm_search: { enabled: false, api_key: '', base_url: 'https://open.bigmodel.cn/api/paas/v4/web_search', search_engine: 'search_std', max_results: 5 }, fetch_limit_bytes: 10485760 },
+          allow_read_paths: null,
+          allow_write_paths: null,
+          web: { enabled: true, brave: { enabled: false, api_key: '', max_results: 5 }, tavily: { enabled: false, api_key: '', base_url: '', max_results: 0 }, duckduckgo: { enabled: true, max_results: 5 }, perplexity: { enabled: false, api_key: '', max_results: 5 }, searxng: { enabled: false, base_url: 'http://localhost:8888', max_results: 5 }, glm_search: { enabled: false, api_key: '', base_url: 'https://open.bigmodel.cn/api/paas/v4/web_search', search_engine: 'search_std', max_results: 5 }, fetch_limit_bytes: 10485760 },
           cron: { enabled: true, exec_timeout_minutes: 5 },
           exec: { enabled: true, enable_deny_patterns: true, custom_deny_patterns: [], custom_allow_patterns: [] },
           skills: {
@@ -1233,7 +1423,24 @@
             }
           },
           media_cleanup: { enabled: true, max_age_minutes: 30, interval_minutes: 5 },
-          mcp: { enabled: false, servers: {} },
+          mcp: {
+            enabled: false,
+            discovery: {
+              enabled: false,
+              ttl: 5,
+              max_search_results: 5,
+              use_bm25: true,
+              use_regex: false
+            },
+            servers: {
+              context7: { enabled: false, type: 'http', url: 'https://mcp.context7.com/mcp', headers: { CONTEXT7_API_KEY: '' } },
+              filesystem: { enabled: false, command: 'npx', args: ['-y', '@modelcontextprotocol/server-filesystem', '/tmp'] },
+              github: { enabled: false, command: 'npx', args: ['-y', '@modelcontextprotocol/server-github'], env: { GITHUB_PERSONAL_ACCESS_TOKEN: '' } },
+              'brave-search': { enabled: false, command: 'npx', args: ['-y', '@modelcontextprotocol/server-brave-search'], env: { BRAVE_API_KEY: '' } },
+              postgres: { enabled: false, command: 'npx', args: ['-y', '@modelcontextprotocol/server-postgres', 'postgresql://user:password@localhost/dbname'] },
+              slack: { enabled: false, command: 'npx', args: ['-y', '@modelcontextprotocol/server-slack'], env: { SLACK_BOT_TOKEN: '', SLACK_TEAM_ID: '' } }
+            }
+          },
           append_file: { enabled: true },
           edit_file: { enabled: true },
           find_skills: { enabled: true },
@@ -1249,7 +1456,7 @@
           write_file: { enabled: true }
         },
         heartbeat: { enabled: true, interval: 30 },
-        devices: { enabled: false, monitor_usb: True },
+        devices: { enabled: false, monitor_usb: true },
       };
     }
 

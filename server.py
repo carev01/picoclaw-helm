@@ -32,6 +32,8 @@ SECRET_FIELDS = {
     "webhook_url", "encoding_aes_key", "client_id", "corp_id",
     "device_id", "homeserver", "nickserv_password", "sasl_password",
     "password", "real_name", "sasl_user", "user",
+    "GITHUB_PERSONAL_ACCESS_TOKEN", "BRAVE_API_KEY", "CONTEXT7_API_KEY",
+    "SLACK_BOT_TOKEN", "SLACK_TEAM_ID",
 }
 
 CONFIG_DIR = Path(os.environ.get("PICOCLAW_HOME", Path.home() / ".picoclaw"))
@@ -143,6 +145,8 @@ def default_config():
         },
         "gateway": {"host": "127.0.0.1", "port": 18790},
         "tools": {
+            "allow_read_paths": None,
+            "allow_write_paths": None,
             "web": {
                 "enabled": True,
                 "brave": {"enabled": False, "api_key": "", "max_results": 5},
@@ -174,7 +178,52 @@ def default_config():
                 }
             },
             "media_cleanup": {"enabled": True, "max_age_minutes": 30, "interval_minutes": 5},
-            "mcp": {"enabled": False, "servers": {}},
+            "mcp": {
+                "enabled": False,
+                "discovery": {
+                    "enabled": False,
+                    "ttl": 5,
+                    "max_search_results": 5,
+                    "use_bm25": True,
+                    "use_regex": False
+                },
+                "servers": {
+                    "context7": {
+                        "enabled": False,
+                        "type": "http",
+                        "url": "https://mcp.context7.com/mcp",
+                        "headers": {"CONTEXT7_API_KEY": ""}
+                    },
+                    "filesystem": {
+                        "enabled": False,
+                        "command": "npx",
+                        "args": ["-y", "@modelcontextprotocol/server-filesystem", "/tmp"]
+                    },
+                    "github": {
+                        "enabled": False,
+                        "command": "npx",
+                        "args": ["-y", "@modelcontextprotocol/server-github"],
+                        "env": {"GITHUB_PERSONAL_ACCESS_TOKEN": ""}
+                    },
+                    "brave-search": {
+                        "enabled": False,
+                        "command": "npx",
+                        "args": ["-y", "@modelcontextprotocol/server-brave-search"],
+                        "env": {"BRAVE_API_KEY": ""}
+                    },
+                    "postgres": {
+                        "enabled": False,
+                        "command": "npx",
+                        "args": ["-y", "@modelcontextprotocol/server-postgres", "postgresql://user:password@localhost/dbname"]
+                    },
+                    "slack": {
+                        "enabled": False,
+                        "command": "npx",
+                        "args": ["-y", "@modelcontextprotocol/server-slack"],
+                        "env": {"SLACK_BOT_TOKEN": "", "SLACK_TEAM_ID": ""}
+                    }
+                }
+            },
             "append_file": {"enabled": True},
             "edit_file": {"enabled": True},
             "find_skills": {"enabled": True},
