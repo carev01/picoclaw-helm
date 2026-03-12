@@ -33,7 +33,7 @@ SECRET_FIELDS = {
     "device_id", "homeserver", "nickserv_password", "sasl_password",
     "password", "real_name", "sasl_user", "user",
     "GITHUB_PERSONAL_ACCESS_TOKEN", "BRAVE_API_KEY", "CONTEXT7_API_KEY",
-    "SLACK_BOT_TOKEN", "SLACK_TEAM_ID",
+    "SLACK_BOT_TOKEN", "SLACK_TEAM_ID", "auth_token",
 }
 
 CONFIG_DIR = Path(os.environ.get("PICOCLAW_HOME", Path.home() / ".picoclaw"))
@@ -141,7 +141,8 @@ def default_config():
             "volcengine": {"api_key": "", "api_base": ""},
             "mistral": {"api_key": "", "api_base": "https://api.mistral.ai/v1"},
             "qwen": {"api_key": "", "api_base": ""},
-            "avian": {"api_key": "", "api_base": "https://api.avian.io/v1"}
+            "avian": {"api_key": "", "api_base": "https://api.avian.io/v1"},
+            "longcat": {"api_key": "", "api_base": "https://api.longcat.chat/openai"}
         },
         "gateway": {"host": "127.0.0.1", "port": 18790},
         "tools": {
@@ -149,10 +150,10 @@ def default_config():
             "allow_write_paths": None,
             "web": {
                 "enabled": True,
-                "brave": {"enabled": False, "api_key": "", "max_results": 5},
+                "brave": {"enabled": False, "api_key": "", "api_keys": [], "max_results": 5},
                 "tavily": {"enabled": False, "api_key": "", "base_url": "", "max_results": 0},
                 "duckduckgo": {"enabled": True, "max_results": 5},
-                "perplexity": {"enabled": False, "api_key": "", "max_results": 5},
+                "perplexity": {"enabled": False, "api_key": "", "api_keys": [], "max_results": 5},
                 "searxng": {"enabled": False, "base_url": "http://localhost:8888", "max_results": 5},
                 "glm_search": {"enabled": False, "api_key": "", "base_url": "https://open.bigmodel.cn/api/paas/v4/web_search", "search_engine": "search_std", "max_results": 5},
                 "fetch_limit_bytes": 10485760
@@ -240,6 +241,7 @@ def default_config():
         },
         "heartbeat": {"enabled": True, "interval": 30},
         "devices": {"enabled": False, "monitor_usb": True},
+        "voice": {"echo_transcription": False},
     }
 
 

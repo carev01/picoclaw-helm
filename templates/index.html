@@ -790,6 +790,13 @@
                 </label>
                 <input type="password" class="w-full bg-gray-100 border border-gray-300 dark:bg-gray-800 dark:border-gray-700 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-blue-500"
                        x-model="config.tools.web.brave.api_key" placeholder="Enter Brave Search API key">
+                <div class="mt-2">
+                  <label class="block text-xs text-gray-500 mb-1">Additional API Keys (comma-separated)</label>
+                  <input type="text" class="w-full bg-gray-100 border border-gray-300 dark:bg-gray-800 dark:border-gray-700 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-blue-500"
+                         :value="(config.tools.web.brave.api_keys || []).join(', ')"
+                         @input="config.tools.web.brave.api_keys = $event.target.value.split(',').map(s => s.trim()).filter(Boolean)"
+                         placeholder="Optional additional keys">
+                </div>
               </div>
               <div>
                 <label class="flex items-center gap-2 mb-2">
@@ -806,6 +813,13 @@
                 </label>
                 <input type="password" class="w-full bg-gray-100 border border-gray-300 dark:bg-gray-800 dark:border-gray-700 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-blue-500"
                        x-model="config.tools.web.perplexity.api_key" placeholder="Enter Perplexity API key">
+                <div class="mt-2">
+                  <label class="block text-xs text-gray-500 mb-1">Additional API Keys (comma-separated)</label>
+                  <input type="text" class="w-full bg-gray-100 border border-gray-300 dark:bg-gray-800 dark:border-gray-700 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-blue-500"
+                         :value="(config.tools.web.perplexity.api_keys || []).join(', ')"
+                         @input="config.tools.web.perplexity.api_keys = $event.target.value.split(',').map(s => s.trim()).filter(Boolean)"
+                         placeholder="Optional additional keys">
+                </div>
               </div>
               <div>
                 <label class="flex items-center gap-2 mb-2">
@@ -825,11 +839,6 @@
               </div>
             </div>
             <div class="mt-4 pt-4 border-t border-gray-200 dark:border-gray-700">
-              <label class="block text-xs text-gray-500 mb-1">Web Search Proxy</label>
-              <input type="text" class="w-full md:w-1/2 bg-gray-100 border border-gray-300 dark:bg-gray-800 dark:border-gray-700 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-blue-500"
-                     x-model="config.tools.web.proxy" placeholder="http://127.0.0.1:7890">
-            </div>
-            <div class="mt-4">
               <label class="block text-xs text-gray-500 mb-1">Fetch Limit (bytes)</label>
               <input type="number" class="w-full md:w-48 bg-gray-100 border border-gray-300 dark:bg-gray-800 dark:border-gray-700 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-blue-500"
                      x-model.number="config.tools.web.fetch_limit_bytes">
@@ -1078,6 +1087,18 @@
           </div>
         </section>
 
+        <section>
+          <h2 class="text-lg font-semibold mb-3">Voice</h2>
+          <div class="bg-white border border-gray-200 dark:bg-gray-900 dark:border-gray-800 rounded-xl p-4">
+            <div class="flex items-center gap-2">
+              <input type="checkbox" class="rounded bg-gray-100 border-gray-300 dark:bg-gray-800 dark:border-gray-600"
+                     x-model="config.voice.echo_transcription">
+              <span class="text-sm text-gray-500 dark:text-gray-400">Echo Transcription</span>
+            </div>
+            <p class="text-xs text-gray-400 mt-2">When enabled, voice transcriptions will be echoed back to confirm receipt</p>
+          </div>
+        </section>
+
         <div class="flex items-center justify-between bg-white border border-gray-200 dark:bg-gray-900 dark:border-gray-800 rounded-xl p-4">
           <label class="flex items-center gap-2">
             <input type="checkbox" class="rounded bg-gray-100 border-gray-300 dark:bg-gray-800 dark:border-gray-600" x-model="restartAfterSave">
@@ -1243,6 +1264,7 @@
           { key: 'mistral', label: 'Mistral', hasBase: true, basePlaceholder: 'https://api.mistral.ai/v1' },
           { key: 'qwen', label: 'Qwen', hasBase: true, basePlaceholder: 'Optional' },
           { key: 'avian', label: 'Avian', hasBase: true, basePlaceholder: 'https://api.avian.io/v1' },
+          { key: 'longcat', label: 'LongCat', hasBase: true, basePlaceholder: 'https://api.longcat.chat/openai' },
         ],
 
         getProvider(key, field) {
@@ -1395,13 +1417,14 @@
           volcengine: { api_key: '', api_base: '' },
           mistral: { api_key: '', api_base: 'https://api.mistral.ai/v1' },
           qwen: { api_key: '', api_base: '' },
-          avian: { api_key: '', api_base: 'https://api.avian.io/v1' }
+          avian: { api_key: '', api_base: 'https://api.avian.io/v1' },
+          longcat: { api_key: '', api_base: 'https://api.longcat.chat/openai' }
         },
         gateway: { host: '127.0.0.1', port: 18790 },
         tools: {
           allow_read_paths: null,
           allow_write_paths: null,
-          web: { enabled: true, brave: { enabled: false, api_key: '', max_results: 5 }, tavily: { enabled: false, api_key: '', base_url: '', max_results: 0 }, duckduckgo: { enabled: true, max_results: 5 }, perplexity: { enabled: false, api_key: '', max_results: 5 }, searxng: { enabled: false, base_url: 'http://localhost:8888', max_results: 5 }, glm_search: { enabled: false, api_key: '', base_url: 'https://open.bigmodel.cn/api/paas/v4/web_search', search_engine: 'search_std', max_results: 5 }, fetch_limit_bytes: 10485760 },
+          web: { enabled: true, brave: { enabled: false, api_key: '', api_keys: [], max_results: 5 }, tavily: { enabled: false, api_key: '', base_url: '', max_results: 0 }, duckduckgo: { enabled: true, max_results: 5 }, perplexity: { enabled: false, api_key: '', api_keys: [], max_results: 5 }, searxng: { enabled: false, base_url: 'http://localhost:8888', max_results: 5 }, glm_search: { enabled: false, api_key: '', base_url: 'https://open.bigmodel.cn/api/paas/v4/web_search', search_engine: 'search_std', max_results: 5 }, fetch_limit_bytes: 10485760 },
           cron: { enabled: true, exec_timeout_minutes: 5 },
           exec: { enabled: true, enable_deny_patterns: true, custom_deny_patterns: [], custom_allow_patterns: [] },
           skills: {
@@ -1456,7 +1479,8 @@
           write_file: { enabled: true }
         },
         heartbeat: { enabled: true, interval: 30 },
-        devices: { enabled: false, monitor_usb: true },
+        devices: { enabled: false, monitor_usb: True },
+        voice: { echo_transcription: False },
       };
     }
 
