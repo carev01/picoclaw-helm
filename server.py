@@ -33,7 +33,8 @@ SECRET_FIELDS = {
     "device_id", "homeserver", "nickserv_password", "sasl_password",
     "password", "real_name", "sasl_user", "user",
     "GITHUB_PERSONAL_ACCESS_TOKEN", "BRAVE_API_KEY", "CONTEXT7_API_KEY",
-    "SLACK_BOT_TOKEN", "SLACK_TEAM_ID", "auth_token",
+    "SLACK_BOT_TOKEN", "SLACK_TEAM_ID", "auth_token", "secret",
+    "crypto_passphrase",
 }
 
 CONFIG_DIR = Path(os.environ.get("PICOCLAW_HOME", Path.home() / ".picoclaw"))
@@ -100,30 +101,35 @@ def default_config():
             "defaults": {
                 "workspace": "~/.picoclaw/workspace",
                 "restrict_to_workspace": True,
-                "model_name": "gpt4",
+                "model_name": "gpt-5.4",
                 "max_tokens": 8192,
+                "context_window": 131072,
                 "temperature": 0.7,
                 "max_tool_iterations": 20,
                 "summarize_message_threshold": 20,
-                "summarize_token_percent": 75
+                "summarize_token_percent": 75,
+                "tool_feedback": {
+                    "enabled": False,
+                    "max_args_length": 300
+                }
             }
         },
         "channels": {
-            "telegram": {"enabled": False, "token": "", "base_url": "", "proxy": "", "allow_from": [], "reasoning_channel_id": ""},
+            "telegram": {"enabled": False, "token": "", "base_url": "", "proxy": "", "allow_from": [], "reasoning_channel_id": "", "use_markdown_v2": False, "streaming": {"enabled": True}},
             "discord": {"enabled": False, "token": "", "proxy": "", "allow_from": [], "group_trigger": {"mention_only": False}, "reasoning_channel_id": ""},
             "slack": {"enabled": False, "bot_token": "", "app_token": "", "allow_from": [], "reasoning_channel_id": ""},
             "whatsapp": {"enabled": False, "bridge_url": "ws://localhost:3001", "use_native": False, "session_store_path": "", "allow_from": [], "reasoning_channel_id": ""},
-            "feishu": {"enabled": False, "app_id": "", "app_secret": "", "encrypt_key": "", "verification_token": "", "allow_from": [], "reasoning_channel_id": "", "random_reaction_emoji": []},
+            "feishu": {"enabled": False, "app_id": "", "app_secret": "", "encrypt_key": "", "verification_token": "", "allow_from": [], "reasoning_channel_id": "", "random_reaction_emoji": [], "is_lark": False},
             "dingtalk": {"enabled": False, "client_id": "", "client_secret": "", "allow_from": [], "reasoning_channel_id": ""},
             "qq": {"enabled": False, "app_id": "", "app_secret": "", "allow_from": [], "reasoning_channel_id": ""},
             "line": {"enabled": False, "channel_secret": "", "channel_access_token": "", "webhook_path": "/webhook/line", "allow_from": [], "reasoning_channel_id": ""},
             "maixcam": {"enabled": False, "host": "0.0.0.0", "port": 18790, "allow_from": [], "reasoning_channel_id": ""},
             "onebot": {"enabled": False, "ws_url": "ws://127.0.0.1:3001", "access_token": "", "reconnect_interval": 5, "group_trigger_prefix": [], "allow_from": [], "reasoning_channel_id": ""},
-            "wecom": {"enabled": False, "token": "", "encoding_aes_key": "", "webhook_url": "https://qyapi.weixin.qq.com/cgi-bin/webhook/send?key=YOUR_KEY", "webhook_path": "/webhook/wecom", "allow_from": [], "reply_timeout": 5, "reasoning_channel_id": ""},
-            "wecom_app": {"enabled": False, "corp_id": "", "corp_secret": "", "agent_id": 1000002, "token": "", "encoding_aes_key": "", "webhook_path": "/webhook/wecom-app", "allow_from": [], "reply_timeout": 5, "reasoning_channel_id": ""},
-            "wecom_aibot": {"enabled": False, "token": "", "encoding_aes_key": "", "webhook_path": "/webhook/wecom-aibot", "max_steps": 10, "welcome_message": "Hello! I'm your AI assistant. How can I help you today?", "reasoning_channel_id": ""},
-            "matrix": {"enabled": False, "homeserver": "https://matrix.org", "user_id": "", "access_token": "", "device_id": "", "join_on_invite": True, "allow_from": [], "group_trigger": {"mention_only": True}, "placeholder": {"enabled": True, "text": "Thinking... \ud83d\udcad"}, "reasoning_channel_id": ""},
-            "irc": {"enabled": False, "server": "irc.libera.chat:6697", "tls": True, "nick": "mybot", "user": "", "real_name": "", "password": "", "nickserv_password": "", "sasl_user": "", "sasl_password": "", "channels": ["#mychannel"], "request_caps": ["server-time", "message-tags"], "allow_from": [], "group_trigger": {"mention_only": True}, "typing": {"enabled": False}, "reasoning_channel_id": ""}
+            "wecom": {"enabled": False, "bot_id": "", "secret": "", "websocket_url": "wss://openws.work.weixin.qq.com", "send_thinking_message": True, "allow_from": [], "reasoning_channel_id": ""},
+            "matrix": {"enabled": False, "homeserver": "https://matrix.org", "user_id": "", "access_token": "", "device_id": "", "join_on_invite": True, "allow_from": [], "group_trigger": {"mention_only": True}, "placeholder": {"enabled": True, "text": "Thinking... \ud83d\udcad"}, "reasoning_channel_id": "", "crypto_database_path": "", "crypto_passphrase": ""},
+            "irc": {"enabled": False, "server": "irc.libera.chat:6697", "tls": True, "nick": "mybot", "user": "", "real_name": "", "password": "", "nickserv_password": "", "sasl_user": "", "sasl_password": "", "channels": ["#mychannel"], "request_caps": ["server-time", "message-tags"], "allow_from": [], "group_trigger": {"mention_only": True}, "typing": {"enabled": False}, "reasoning_channel_id": ""},
+            "pico": {"enabled": False, "token": "", "allow_token_query": False, "allow_origins": [], "ping_interval": 30, "read_timeout": 60, "max_connections": 100, "allow_from": []},
+            "pico_client": {"enabled": False, "url": "wss://remote-pico-server/pico/ws", "token": "", "session_id": "", "ping_interval": 30, "read_timeout": 60, "allow_from": []}
         },
         "model_list": [],
         "providers": {
@@ -144,24 +150,29 @@ def default_config():
             "avian": {"api_key": "", "api_base": "https://api.avian.io/v1"},
             "longcat": {"api_key": "", "api_base": "https://api.longcat.chat/openai"}
         },
-        "gateway": {"host": "127.0.0.1", "port": 18790},
+        "gateway": {"host": "127.0.0.1", "port": 18790, "hot_reload": False, "log_level": "fatal"},
         "tools": {
             "allow_read_paths": None,
             "allow_write_paths": None,
             "web": {
                 "enabled": True,
+                "prefer_native": True,
+                "fetch_limit_bytes": 10485760,
+                "format": "plaintext",
+                "private_host_whitelist": [],
                 "brave": {"enabled": False, "api_key": "", "api_keys": [], "max_results": 5},
                 "tavily": {"enabled": False, "api_key": "", "base_url": "", "max_results": 0},
                 "duckduckgo": {"enabled": True, "max_results": 5},
                 "perplexity": {"enabled": False, "api_key": "", "api_keys": [], "max_results": 5},
                 "searxng": {"enabled": False, "base_url": "http://localhost:8888", "max_results": 5},
                 "glm_search": {"enabled": False, "api_key": "", "base_url": "https://open.bigmodel.cn/api/paas/v4/web_search", "search_engine": "search_std", "max_results": 5},
-                "fetch_limit_bytes": 10485760
+                "baidu_search": {"enabled": False, "api_key": "", "base_url": "https://qianfan.baidubce.com/v2/ai_search/web_search", "max_results": 10}
             },
             "cron": {"enabled": True, "exec_timeout_minutes": 5},
             "exec": {"enabled": True, "enable_deny_patterns": True, "custom_deny_patterns": None, "custom_allow_patterns": None},
             "skills": {
                 "enabled": True,
+                "github": {"proxy": "", "token": ""},
                 "max_concurrent_searches": 2,
                 "search_cache": {"max_size": 50, "ttl_seconds": 300},
                 "registries": {
@@ -241,7 +252,8 @@ def default_config():
         },
         "heartbeat": {"enabled": True, "interval": 30},
         "devices": {"enabled": False, "monitor_usb": True},
-        "voice": {"echo_transcription": False},
+        "voice": {"model_name": "", "echo_transcription": False},
+        "hooks": {"enabled": True, "defaults": {"observer_timeout_ms": 500, "interceptor_timeout_ms": 5000, "approval_timeout_ms": 60000}}
     }
 
 

@@ -101,6 +101,12 @@
                 <p class="text-xs text-gray-400 mt-1">Default model name from model_list</p>
               </div>
               <div>
+                <label class="block text-xs text-gray-500 mb-1">Context Window</label>
+                <input type="number" class="w-full bg-gray-100 border border-gray-300 dark:bg-gray-800 dark:border-gray-700 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-blue-500"
+                       x-model.number="config.agents.defaults.context_window">
+                <p class="text-xs text-gray-400 mt-1">Maximum context token size</p>
+              </div>
+              <div>
                 <label class="block text-xs text-gray-500 mb-1">Max Tokens</label>
                 <input type="number" class="w-full bg-gray-100 border border-gray-300 dark:bg-gray-800 dark:border-gray-700 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-blue-500"
                        x-model.number="config.agents.defaults.max_tokens">
@@ -126,6 +132,21 @@
                 <input type="number" step="1" min="0" max="100" class="w-full bg-gray-100 border border-gray-300 dark:bg-gray-800 dark:border-gray-700 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-blue-500"
                        x-model.number="config.agents.defaults.summarize_token_percent">
                 <p class="text-xs text-gray-400 mt-1">Percentage of context to retain when summarizing</p>
+              </div>
+            </div>
+            <div class="mt-4 pt-4 border-t border-gray-200 dark:border-gray-700">
+              <h4 class="text-sm font-medium mb-3">Tool Feedback</h4>
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div class="flex items-center gap-2">
+                  <input type="checkbox" class="rounded bg-gray-100 border-gray-300 dark:bg-gray-800 dark:border-gray-600"
+                         x-model="config.agents.defaults.tool_feedback.enabled">
+                  <span class="text-sm text-gray-500">Enable Tool Feedback</span>
+                </div>
+                <div>
+                  <label class="block text-xs text-gray-500 mb-1">Max Args Length</label>
+                  <input type="number" class="w-full bg-gray-100 border border-gray-300 dark:bg-gray-800 dark:border-gray-700 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-blue-500"
+                         x-model.number="config.agents.defaults.tool_feedback.max_args_length">
+                </div>
               </div>
             </div>
           </div>
@@ -169,6 +190,16 @@
                   <label class="block text-xs text-gray-500 mb-1">Reasoning Channel ID</label>
                   <input type="text" class="w-full bg-gray-100 border border-gray-300 dark:bg-gray-800 dark:border-gray-700 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-blue-500"
                          x-model="config.channels.telegram.reasoning_channel_id" placeholder="Optional">
+                </div>
+                <div class="flex items-center gap-2">
+                  <input type="checkbox" class="rounded bg-gray-100 border-gray-300 dark:bg-gray-800 dark:border-gray-600"
+                         x-model="config.channels.telegram.use_markdown_v2">
+                  <span class="text-xs text-gray-500">Use Markdown V2</span>
+                </div>
+                <div class="flex items-center gap-2">
+                  <input type="checkbox" class="rounded bg-gray-100 border-gray-300 dark:bg-gray-800 dark:border-gray-600"
+                         x-model="config.channels.telegram.streaming.enabled">
+                  <span class="text-xs text-gray-500">Enable Streaming</span>
                 </div>
               </div>
             </div>
@@ -311,6 +342,11 @@
                   <input type="password" class="w-full bg-gray-100 border border-gray-300 dark:bg-gray-800 dark:border-gray-700 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-blue-500"
                          x-model="config.channels.feishu.verification_token">
                 </div>
+                <div class="flex items-center gap-2">
+                  <input type="checkbox" class="rounded bg-gray-100 border-gray-300 dark:bg-gray-800 dark:border-gray-600"
+                         x-model="config.channels.feishu.is_lark">
+                  <span class="text-xs text-gray-500">Is Lark (Feishu Enterprise)</span>
+                </div>
                 <div class="md:col-span-2">
                   <label class="block text-xs text-gray-500 mb-1">Allowed Users (comma-separated)</label>
                   <input type="text" class="w-full bg-gray-100 border border-gray-300 dark:bg-gray-800 dark:border-gray-700 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-blue-500"
@@ -413,24 +449,24 @@
               </div>
               <div class="grid grid-cols-1 md:grid-cols-2 gap-3" x-show="config.channels.wecom.enabled">
                 <div>
-                  <label class="block text-xs text-gray-500 mb-1">Token</label>
+                  <label class="block text-xs text-gray-500 mb-1">Bot ID</label>
                   <input type="text" class="w-full bg-gray-100 border border-gray-300 dark:bg-gray-800 dark:border-gray-700 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-blue-500"
-                         x-model="config.channels.wecom.token">
+                         x-model="config.channels.wecom.bot_id">
                 </div>
                 <div>
-                  <label class="block text-xs text-gray-500 mb-1">Encoding AES Key</label>
+                  <label class="block text-xs text-gray-500 mb-1">Secret</label>
                   <input type="password" class="w-full bg-gray-100 border border-gray-300 dark:bg-gray-800 dark:border-gray-700 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-blue-500"
-                         x-model="config.channels.wecom.encoding_aes_key">
+                         x-model="config.channels.wecom.secret">
                 </div>
                 <div>
-                  <label class="block text-xs text-gray-500 mb-1">Webhook URL</label>
+                  <label class="block text-xs text-gray-500 mb-1">WebSocket URL</label>
                   <input type="text" class="w-full bg-gray-100 border border-gray-300 dark:bg-gray-800 dark:border-gray-700 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-blue-500"
-                         x-model="config.channels.wecom.webhook_url">
+                         x-model="config.channels.wecom.websocket_url" placeholder="wss://openws.work.weixin.qq.com">
                 </div>
-                <div>
-                  <label class="block text-xs text-gray-500 mb-1">Webhook Path</label>
-                  <input type="text" class="w-full bg-gray-100 border border-gray-300 dark:bg-gray-800 dark:border-gray-700 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-blue-500"
-                         x-model="config.channels.wecom.webhook_path">
+                <div class="flex items-center gap-2">
+                  <input type="checkbox" class="rounded bg-gray-100 border-gray-300 dark:bg-gray-800 dark:border-gray-600"
+                         x-model="config.channels.wecom.send_thinking_message">
+                  <span class="text-xs text-gray-500">Send Thinking Message</span>
                 </div>
                 <div class="md:col-span-2">
                   <label class="block text-xs text-gray-500 mb-1">Allowed Users (comma-separated)</label>
@@ -442,111 +478,6 @@
                   <label class="block text-xs text-gray-500 mb-1">Reasoning Channel ID</label>
                   <input type="text" class="w-full bg-gray-100 border border-gray-300 dark:bg-gray-800 dark:border-gray-700 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-blue-500"
                          x-model="config.channels.wecom.reasoning_channel_id" placeholder="Optional">
-                </div>
-                <div>
-                  <label class="block text-xs text-gray-500 mb-1">Reply Timeout (seconds)</label>
-                  <input type="number" class="w-full bg-gray-100 border border-gray-300 dark:bg-gray-800 dark:border-gray-700 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-blue-500"
-                         x-model.number="config.channels.wecom.reply_timeout">
-                </div>
-              </div>
-            </div>
-
-            <div class="bg-white border border-gray-200 dark:bg-gray-900 dark:border-gray-800 rounded-xl p-4">
-              <div class="flex items-center justify-between mb-3">
-                <h3 class="font-medium">WeCom App</h3>
-                <label class="flex items-center gap-2 cursor-pointer">
-                  <input type="checkbox" class="rounded bg-gray-100 border-gray-300 dark:bg-gray-800 dark:border-gray-600" x-model="config.channels.wecom_app.enabled">
-                  <span class="text-xs text-gray-500 dark:text-gray-400">Enabled</span>
-                </label>
-              </div>
-              <div class="grid grid-cols-1 md:grid-cols-2 gap-3" x-show="config.channels.wecom_app.enabled">
-                <div>
-                  <label class="block text-xs text-gray-500 mb-1">Corp ID</label>
-                  <input type="text" class="w-full bg-gray-100 border border-gray-300 dark:bg-gray-800 dark:border-gray-700 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-blue-500"
-                         x-model="config.channels.wecom_app.corp_id">
-                </div>
-                <div>
-                  <label class="block text-xs text-gray-500 mb-1">Corp Secret</label>
-                  <input type="password" class="w-full bg-gray-100 border border-gray-300 dark:bg-gray-800 dark:border-gray-700 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-blue-500"
-                         x-model="config.channels.wecom_app.corp_secret">
-                </div>
-                <div>
-                  <label class="block text-xs text-gray-500 mb-1">Agent ID</label>
-                  <input type="number" class="w-full bg-gray-100 border border-gray-300 dark:bg-gray-800 dark:border-gray-700 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-blue-500"
-                         x-model.number="config.channels.wecom_app.agent_id">
-                </div>
-                <div>
-                  <label class="block text-xs text-gray-500 mb-1">Token</label>
-                  <input type="text" class="w-full bg-gray-100 border border-gray-300 dark:bg-gray-800 dark:border-gray-700 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-blue-500"
-                         x-model="config.channels.wecom_app.token">
-                </div>
-                <div>
-                  <label class="block text-xs text-gray-500 mb-1">Encoding AES Key</label>
-                  <input type="password" class="w-full bg-gray-100 border border-gray-300 dark:bg-gray-800 dark:border-gray-700 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-blue-500"
-                         x-model="config.channels.wecom_app.encoding_aes_key">
-                </div>
-                <div>
-                  <label class="block text-xs text-gray-500 mb-1">Webhook Path</label>
-                  <input type="text" class="w-full bg-gray-100 border border-gray-300 dark:bg-gray-800 dark:border-gray-700 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-blue-500"
-                         x-model="config.channels.wecom_app.webhook_path">
-                </div>
-                <div class="md:col-span-2">
-                  <label class="block text-xs text-gray-500 mb-1">Allowed Users (comma-separated)</label>
-                  <input type="text" class="w-full bg-gray-100 border border-gray-300 dark:bg-gray-800 dark:border-gray-700 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-blue-500"
-                         :value="(config.channels.wecom_app.allow_from || []).join(', ')"
-                         @input="config.channels.wecom_app.allow_from = $event.target.value.split(',').map(s => s.trim()).filter(Boolean)">
-                </div>
-                <div>
-                  <label class="block text-xs text-gray-500 mb-1">Reasoning Channel ID</label>
-                  <input type="text" class="w-full bg-gray-100 border border-gray-300 dark:bg-gray-800 dark:border-gray-700 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-blue-500"
-                         x-model="config.channels.wecom_app.reasoning_channel_id" placeholder="Optional">
-                </div>
-                <div>
-                  <label class="block text-xs text-gray-500 mb-1">Reply Timeout (seconds)</label>
-                  <input type="number" class="w-full bg-gray-100 border border-gray-300 dark:bg-gray-800 dark:border-gray-700 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-blue-500"
-                         x-model.number="config.channels.wecom_app.reply_timeout">
-                </div>
-              </div>
-            </div>
-
-            <div class="bg-white border border-gray-200 dark:bg-gray-900 dark:border-gray-800 rounded-xl p-4">
-              <div class="flex items-center justify-between mb-3">
-                <h3 class="font-medium">WeCom AI Bot</h3>
-                <label class="flex items-center gap-2 cursor-pointer">
-                  <input type="checkbox" class="rounded bg-gray-100 border-gray-300 dark:bg-gray-800 dark:border-gray-600" x-model="config.channels.wecom_aibot.enabled">
-                  <span class="text-xs text-gray-500 dark:text-gray-400">Enabled</span>
-                </label>
-              </div>
-              <div class="grid grid-cols-1 md:grid-cols-2 gap-3" x-show="config.channels.wecom_aibot.enabled">
-                <div>
-                  <label class="block text-xs text-gray-500 mb-1">Token</label>
-                  <input type="text" class="w-full bg-gray-100 border border-gray-300 dark:bg-gray-800 dark:border-gray-700 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-blue-500"
-                         x-model="config.channels.wecom_aibot.token">
-                </div>
-                <div>
-                  <label class="block text-xs text-gray-500 mb-1">Encoding AES Key</label>
-                  <input type="password" class="w-full bg-gray-100 border border-gray-300 dark:bg-gray-800 dark:border-gray-700 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-blue-500"
-                         x-model="config.channels.wecom_aibot.encoding_aes_key">
-                </div>
-                <div>
-                  <label class="block text-xs text-gray-500 mb-1">Webhook Path</label>
-                  <input type="text" class="w-full bg-gray-100 border border-gray-300 dark:bg-gray-800 dark:border-gray-700 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-blue-500"
-                         x-model="config.channels.wecom_aibot.webhook_path" placeholder="/webhook/wecom-aibot">
-                </div>
-                <div>
-                  <label class="block text-xs text-gray-500 mb-1">Max Steps</label>
-                  <input type="number" class="w-full bg-gray-100 border border-gray-300 dark:bg-gray-800 dark:border-gray-700 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-blue-500"
-                         x-model.number="config.channels.wecom_aibot.max_steps">
-                </div>
-                <div class="md:col-span-2">
-                  <label class="block text-xs text-gray-500 mb-1">Welcome Message</label>
-                  <input type="text" class="w-full bg-gray-100 border border-gray-300 dark:bg-gray-800 dark:border-gray-700 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-blue-500"
-                         x-model="config.channels.wecom_aibot.welcome_message">
-                </div>
-                <div>
-                  <label class="block text-xs text-gray-500 mb-1">Reasoning Channel ID</label>
-                  <input type="text" class="w-full bg-gray-100 border border-gray-300 dark:bg-gray-800 dark:border-gray-700 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-blue-500"
-                         x-model="config.channels.wecom_aibot.reasoning_channel_id" placeholder="Optional">
                 </div>
               </div>
             </div>
@@ -656,6 +587,16 @@
                   <label class="block text-xs text-gray-500 mb-1">Device ID</label>
                   <input type="text" class="w-full bg-gray-100 border border-gray-300 dark:bg-gray-800 dark:border-gray-700 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-blue-500"
                          x-model="config.channels.matrix.device_id" placeholder="Optional">
+                </div>
+                <div>
+                  <label class="block text-xs text-gray-500 mb-1">Crypto Database Path</label>
+                  <input type="text" class="w-full bg-gray-100 border border-gray-300 dark:bg-gray-800 dark:border-gray-700 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-blue-500"
+                         x-model="config.channels.matrix.crypto_database_path" placeholder="Optional">
+                </div>
+                <div>
+                  <label class="block text-xs text-gray-500 mb-1">Crypto Passphrase</label>
+                  <input type="password" class="w-full bg-gray-100 border border-gray-300 dark:bg-gray-800 dark:border-gray-700 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-blue-500"
+                         x-model="config.channels.matrix.crypto_passphrase" placeholder="Optional">
                 </div>
                 <div class="flex items-center gap-2">
                   <input type="checkbox" class="rounded bg-gray-100 border-gray-300 dark:bg-gray-800 dark:border-gray-600"
@@ -776,6 +717,160 @@
               </div>
             </div>
 
+            <div class="bg-white border border-gray-200 dark:bg-gray-900 dark:border-gray-800 rounded-xl p-4">
+              <div class="flex items-center justify-between mb-3">
+                <h3 class="font-medium">Pico Server</h3>
+                <label class="flex items-center gap-2 cursor-pointer">
+                  <input type="checkbox" class="rounded bg-gray-100 border-gray-300 dark:bg-gray-800 dark:border-gray-600" x-model="config.channels.pico.enabled">
+                  <span class="text-xs text-gray-500 dark:text-gray-400">Enabled</span>
+                </label>
+              </div>
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-3" x-show="config.channels.pico.enabled">
+                <div>
+                  <label class="block text-xs text-gray-500 mb-1">Token</label>
+                  <input type="password" class="w-full bg-gray-100 border border-gray-300 dark:bg-gray-800 dark:border-gray-700 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-blue-500"
+                         x-model="config.channels.pico.token">
+                </div>
+                <div class="flex items-center gap-2">
+                  <input type="checkbox" class="rounded bg-gray-100 border-gray-300 dark:bg-gray-800 dark:border-gray-600"
+                         x-model="config.channels.pico.allow_token_query">
+                  <span class="text-xs text-gray-500">Allow Token Query</span>
+                </div>
+                <div>
+                  <label class="block text-xs text-gray-500 mb-1">Allowed Origins (comma-separated)</label>
+                  <input type="text" class="w-full bg-gray-100 border border-gray-300 dark:bg-gray-800 dark:border-gray-700 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-blue-500"
+                         :value="(config.channels.pico.allow_origins || []).join(', ')"
+                         @input="config.channels.pico.allow_origins = $event.target.value.split(',').map(s => s.trim()).filter(Boolean)">
+                </div>
+                <div>
+                  <label class="block text-xs text-gray-500 mb-1">Ping Interval (seconds)</label>
+                  <input type="number" class="w-full bg-gray-100 border border-gray-300 dark:bg-gray-800 dark:border-gray-700 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-blue-500"
+                         x-model.number="config.channels.pico.ping_interval">
+                </div>
+                <div>
+                  <label class="block text-xs text-gray-500 mb-1">Read Timeout (seconds)</label>
+                  <input type="number" class="w-full bg-gray-100 border border-gray-300 dark:bg-gray-800 dark:border-gray-700 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-blue-500"
+                         x-model.number="config.channels.pico.read_timeout">
+                </div>
+                <div>
+                  <label class="block text-xs text-gray-500 mb-1">Max Connections</label>
+                  <input type="number" class="w-full bg-gray-100 border border-gray-300 dark:bg-gray-800 dark:border-gray-700 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-blue-500"
+                         x-model.number="config.channels.pico.max_connections">
+                </div>
+                <div class="md:col-span-2">
+                  <label class="block text-xs text-gray-500 mb-1">Allowed Users (comma-separated)</label>
+                  <input type="text" class="w-full bg-gray-100 border border-gray-300 dark:bg-gray-800 dark:border-gray-700 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-blue-500"
+                         :value="(config.channels.pico.allow_from || []).join(', ')"
+                         @input="config.channels.pico.allow_from = $event.target.value.split(',').map(s => s.trim()).filter(Boolean)">
+                </div>
+              </div>
+            </div>
+
+            <div class="bg-white border border-gray-200 dark:bg-gray-900 dark:border-gray-800 rounded-xl p-4">
+              <div class="flex items-center justify-between mb-3">
+                <h3 class="font-medium">Pico Client</h3>
+                <label class="flex items-center gap-2 cursor-pointer">
+                  <input type="checkbox" class="rounded bg-gray-100 border-gray-300 dark:bg-gray-800 dark:border-gray-600" x-model="config.channels.pico_client.enabled">
+                  <span class="text-xs text-gray-500 dark:text-gray-400">Enabled</span>
+                </label>
+              </div>
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-3" x-show="config.channels.pico_client.enabled">
+                <div class="md:col-span-2">
+                  <label class="block text-xs text-gray-500 mb-1">Server URL</label>
+                  <input type="text" class="w-full bg-gray-100 border border-gray-300 dark:bg-gray-800 dark:border-gray-700 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-blue-500"
+                         x-model="config.channels.pico_client.url" placeholder="wss://remote-pico-server/pico/ws">
+                </div>
+                <div>
+                  <label class="block text-xs text-gray-500 mb-1">Token</label>
+                  <input type="password" class="w-full bg-gray-100 border border-gray-300 dark:bg-gray-800 dark:border-gray-700 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-blue-500"
+                         x-model="config.channels.pico_client.token">
+                </div>
+                <div>
+                  <label class="block text-xs text-gray-500 mb-1">Session ID</label>
+                  <input type="text" class="w-full bg-gray-100 border border-gray-300 dark:bg-gray-800 dark:border-gray-700 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-blue-500"
+                         x-model="config.channels.pico_client.session_id">
+                </div>
+                <div>
+                  <label class="block text-xs text-gray-500 mb-1">Ping Interval (seconds)</label>
+                  <input type="number" class="w-full bg-gray-100 border border-gray-300 dark:bg-gray-800 dark:border-gray-700 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-blue-500"
+                         x-model.number="config.channels.pico_client.ping_interval">
+                </div>
+                <div>
+                  <label class="block text-xs text-gray-500 mb-1">Read Timeout (seconds)</label>
+                  <input type="number" class="w-full bg-gray-100 border border-gray-300 dark:bg-gray-800 dark:border-gray-700 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-blue-500"
+                         x-model.number="config.channels.pico_client.read_timeout">
+                </div>
+                <div class="md:col-span-2">
+                  <label class="block text-xs text-gray-500 mb-1">Allowed Users (comma-separated)</label>
+                  <input type="text" class="w-full bg-gray-100 border border-gray-300 dark:bg-gray-800 dark:border-gray-700 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-blue-500"
+                         :value="(config.channels.pico_client.allow_from || []).join(', ')"
+                         @input="config.channels.pico_client.allow_from = $event.target.value.split(',').map(s => s.trim()).filter(Boolean)">
+                </div>
+              </div>
+            </div>
+
+          </div>
+        </section>
+
+        <section>
+          <h2 class="text-lg font-semibold mb-3">Gateway</h2>
+          <div class="bg-white border border-gray-200 dark:bg-gray-900 dark:border-gray-800 rounded-xl p-4">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <label class="block text-xs text-gray-500 mb-1">Host</label>
+                <input type="text" class="w-full bg-gray-100 border border-gray-300 dark:bg-gray-800 dark:border-gray-700 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-blue-500"
+                       x-model="config.gateway.host">
+              </div>
+              <div>
+                <label class="block text-xs text-gray-500 mb-1">Port</label>
+                <input type="number" class="w-full bg-gray-100 border border-gray-300 dark:bg-gray-800 dark:border-gray-700 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-blue-500"
+                       x-model.number="config.gateway.port">
+              </div>
+              <div class="flex items-center gap-2">
+                <input type="checkbox" class="rounded bg-gray-100 border-gray-300 dark:bg-gray-800 dark:border-gray-600"
+                       x-model="config.gateway.hot_reload">
+                <span class="text-sm text-gray-500">Hot Reload</span>
+              </div>
+              <div>
+                <label class="block text-xs text-gray-500 mb-1">Log Level</label>
+                <select class="w-full bg-gray-100 border border-gray-300 dark:bg-gray-800 dark:border-gray-700 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-blue-500"
+                        x-model="config.gateway.log_level">
+                  <option value="debug">Debug</option>
+                  <option value="info">Info</option>
+                  <option value="warn">Warn</option>
+                  <option value="error">Error</option>
+                  <option value="fatal">Fatal</option>
+                </select>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section>
+          <h2 class="text-lg font-semibold mb-3">Hooks</h2>
+          <div class="bg-white border border-gray-200 dark:bg-gray-900 dark:border-gray-800 rounded-xl p-4">
+            <div class="flex items-center gap-2 mb-4">
+              <input type="checkbox" class="rounded bg-gray-100 border-gray-300 dark:bg-gray-800 dark:border-gray-600"
+                     x-model="config.hooks.enabled">
+              <span class="text-sm text-gray-500 dark:text-gray-400">Enable Hooks</span>
+            </div>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div>
+                <label class="block text-xs text-gray-500 mb-1">Observer Timeout (ms)</label>
+                <input type="number" class="w-full bg-gray-100 border border-gray-300 dark:bg-gray-800 dark:border-gray-700 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-blue-500"
+                       x-model.number="config.hooks.defaults.observer_timeout_ms">
+              </div>
+              <div>
+                <label class="block text-xs text-gray-500 mb-1">Interceptor Timeout (ms)</label>
+                <input type="number" class="w-full bg-gray-100 border border-gray-300 dark:bg-gray-800 dark:border-gray-700 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-blue-500"
+                       x-model.number="config.hooks.defaults.interceptor_timeout_ms">
+              </div>
+              <div>
+                <label class="block text-xs text-gray-500 mb-1">Approval Timeout (ms)</label>
+                <input type="number" class="w-full bg-gray-100 border border-gray-300 dark:bg-gray-800 dark:border-gray-700 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-blue-500"
+                       x-model.number="config.hooks.defaults.approval_timeout_ms">
+              </div>
+            </div>
           </div>
         </section>
 
@@ -837,13 +932,46 @@
                 <input type="password" class="w-full bg-gray-100 border border-gray-300 dark:bg-gray-800 dark:border-gray-700 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-blue-500"
                        x-model="config.tools.web.glm_search.api_key" placeholder="Enter GLM API key">
               </div>
+              <div>
+                <label class="flex items-center gap-2 mb-2">
+                  <input type="checkbox" class="rounded bg-gray-100 border-gray-300 dark:bg-gray-800 dark:border-gray-600" x-model="config.tools.web.baidu_search.enabled">
+                  <span class="text-sm text-gray-500 dark:text-gray-400">Baidu Search</span>
+                </label>
+                <input type="password" class="w-full bg-gray-100 border border-gray-300 dark:bg-gray-800 dark:border-gray-700 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-blue-500"
+                       x-model="config.tools.web.baidu_search.api_key" placeholder="Enter Baidu API key">
+              </div>
             </div>
             <div class="mt-4 pt-4 border-t border-gray-200 dark:border-gray-700">
-              <label class="block text-xs text-gray-500 mb-1">Fetch Limit (bytes)</label>
-              <input type="number" class="w-full md:w-48 bg-gray-100 border border-gray-300 dark:bg-gray-800 dark:border-gray-700 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-blue-500"
-                     x-model.number="config.tools.web.fetch_limit_bytes">
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <label class="block text-xs text-gray-500 mb-1">Fetch Limit (bytes)</label>
+                  <input type="number" class="w-full md:w-48 bg-gray-100 border border-gray-300 dark:bg-gray-800 dark:border-gray-700 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-blue-500"
+                         x-model.number="config.tools.web.fetch_limit_bytes">
+                </div>
+                <div class="flex items-center gap-2">
+                  <input type="checkbox" class="rounded bg-gray-100 border-gray-300 dark:bg-gray-800 dark:border-gray-600"
+                         x-model="config.tools.web.prefer_native">
+                  <span class="text-sm text-gray-500">Prefer Native</span>
+                </div>
+                <div>
+                  <label class="block text-xs text-gray-500 mb-1">Format</label>
+                  <select class="w-full bg-gray-100 border border-gray-300 dark:bg-gray-800 dark:border-gray-700 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-blue-500"
+                          x-model="config.tools.web.format">
+                    <option value="plaintext">Plaintext</option>
+                    <option value="markdown">Markdown</option>
+                    <option value="html">HTML</option>
+                  </select>
+                </div>
+                <div>
+                  <label class="block text-xs text-gray-500 mb-1">Private Host Whitelist (comma-separated)</label>
+                  <input type="text" class="w-full bg-gray-100 border border-gray-300 dark:bg-gray-800 dark:border-gray-700 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-blue-500"
+                         :value="(config.tools.web.private_host_whitelist || []).join(', ')"
+                         @input="config.tools.web.private_host_whitelist = $event.target.value.split(',').map(s => s.trim()).filter(Boolean)"
+                         placeholder="Optional hosts">
+                </div>
+              </div>
             </div>
-            <div class="mt-4">
+            <div class="mt-4 pt-4 border-t border-gray-200 dark:border-gray-700">
               <label class="block text-xs text-gray-500 mb-1">Cron Job Timeout (minutes)</label>
               <input type="number" class="w-full md:w-48 bg-gray-100 border border-gray-300 dark:bg-gray-800 dark:border-gray-700 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-blue-500"
                      x-model.number="config.tools.cron.exec_timeout_minutes">
@@ -893,6 +1021,17 @@
                 <div class="mt-2">
                   <input type="password" class="w-full bg-gray-100 border border-gray-300 dark:bg-gray-800 dark:border-gray-700 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-blue-500"
                          x-model="config.tools.skills.registries.clawhub.auth_token" placeholder="Auth Token (optional)">
+                </div>
+              </div>
+              <div>
+                <label class="flex items-center gap-2 mb-2">
+                  <span class="text-sm text-gray-500 dark:text-gray-400">GitHub</span>
+                </label>
+                <div class="space-y-2">
+                  <input type="text" class="w-full bg-gray-100 border border-gray-300 dark:bg-gray-800 dark:border-gray-700 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-blue-500"
+                         x-model="config.tools.skills.github.proxy" placeholder="Proxy (e.g., http://127.0.0.1:7891)">
+                  <input type="password" class="w-full bg-gray-100 border border-gray-300 dark:bg-gray-800 dark:border-gray-700 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-blue-500"
+                         x-model="config.tools.skills.github.token" placeholder="GitHub Token (optional)">
                 </div>
               </div>
             </div>
@@ -1090,10 +1229,17 @@
         <section>
           <h2 class="text-lg font-semibold mb-3">Voice</h2>
           <div class="bg-white border border-gray-200 dark:bg-gray-900 dark:border-gray-800 rounded-xl p-4">
-            <div class="flex items-center gap-2">
-              <input type="checkbox" class="rounded bg-gray-100 border-gray-300 dark:bg-gray-800 dark:border-gray-600"
-                     x-model="config.voice.echo_transcription">
-              <span class="text-sm text-gray-500 dark:text-gray-400">Echo Transcription</span>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <label class="block text-xs text-gray-500 mb-1">Model Name</label>
+                <input type="text" class="w-full bg-gray-100 border border-gray-300 dark:bg-gray-800 dark:border-gray-700 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-blue-500"
+                       x-model="config.voice.model_name" placeholder="Optional voice model">
+              </div>
+              <div class="flex items-center gap-2">
+                <input type="checkbox" class="rounded bg-gray-100 border-gray-300 dark:bg-gray-800 dark:border-gray-600"
+                       x-model="config.voice.echo_transcription">
+                <span class="text-sm text-gray-500 dark:text-gray-400">Echo Transcription</span>
+              </div>
             </div>
             <p class="text-xs text-gray-400 mt-2">When enabled, voice transcriptions will be echoed back to confirm receipt</p>
           </div>
@@ -1383,23 +1529,36 @@
 
     function defaultConfig() {
       return {
-        agents: { defaults: { workspace: '~/.picoclaw/workspace', restrict_to_workspace: true, model_name: 'gpt4', max_tokens: 8192, temperature: 0.7, max_tool_iterations: 20, summarize_message_threshold: 20, summarize_token_percent: 75 } },
+        agents: { 
+          defaults: { 
+            workspace: '~/.picoclaw/workspace', 
+            restrict_to_workspace: true, 
+            model_name: 'gpt-5.4', 
+            max_tokens: 8192,
+            context_window: 131072,
+            temperature: 0.7, 
+            max_tool_iterations: 20, 
+            summarize_message_threshold: 20, 
+            summarize_token_percent: 75,
+            tool_feedback: { enabled: false, max_args_length: 300 }
+          } 
+        },
         channels: {
-          telegram: { enabled: false, token: '', base_url: '', proxy: '', allow_from: [], reasoning_channel_id: '' },
+          telegram: { enabled: false, token: '', base_url: '', proxy: '', allow_from: [], reasoning_channel_id: '', use_markdown_v2: false, streaming: { enabled: true } },
           discord: { enabled: false, token: '', proxy: '', allow_from: [], group_trigger: { mention_only: false }, reasoning_channel_id: '' },
           slack: { enabled: false, bot_token: '', app_token: '', allow_from: [], reasoning_channel_id: '' },
           whatsapp: { enabled: false, bridge_url: 'ws://localhost:3001', use_native: false, session_store_path: '', allow_from: [], reasoning_channel_id: '' },
-          feishu: { enabled: false, app_id: '', app_secret: '', encrypt_key: '', verification_token: '', allow_from: [], reasoning_channel_id: '', random_reaction_emoji: [] },
+          feishu: { enabled: false, app_id: '', app_secret: '', encrypt_key: '', verification_token: '', allow_from: [], reasoning_channel_id: '', random_reaction_emoji: [], is_lark: false },
           dingtalk: { enabled: false, client_id: '', client_secret: '', allow_from: [], reasoning_channel_id: '' },
           qq: { enabled: false, app_id: '', app_secret: '', allow_from: [], reasoning_channel_id: '' },
           line: { enabled: false, channel_secret: '', channel_access_token: '', webhook_path: '/webhook/line', allow_from: [], reasoning_channel_id: '' },
           maixcam: { enabled: false, host: '0.0.0.0', port: 18790, allow_from: [], reasoning_channel_id: '' },
           onebot: { enabled: false, ws_url: 'ws://127.0.0.1:3001', access_token: '', reconnect_interval: 5, group_trigger_prefix: [], allow_from: [], reasoning_channel_id: '' },
-          wecom: { enabled: false, token: '', encoding_aes_key: '', webhook_url: 'https://qyapi.weixin.qq.com/cgi-bin/webhook/send?key=YOUR_KEY', webhook_path: '/webhook/wecom', allow_from: [], reply_timeout: 5, reasoning_channel_id: '' },
-          wecom_app: { enabled: false, corp_id: '', corp_secret: '', agent_id: 1000002, token: '', encoding_aes_key: '', webhook_path: '/webhook/wecom-app', allow_from: [], reply_timeout: 5, reasoning_channel_id: '' },
-          wecom_aibot: { enabled: false, token: '', encoding_aes_key: '', webhook_path: '/webhook/wecom-aibot', max_steps: 10, welcome_message: "Hello! I'm your AI assistant. How can I help you today?", reasoning_channel_id: '' },
-          matrix: { enabled: false, homeserver: 'https://matrix.org', user_id: '', access_token: '', device_id: '', join_on_invite: true, allow_from: [], group_trigger: { mention_only: true }, placeholder: { enabled: true, text: 'Thinking... ' }, reasoning_channel_id: '' },
-          irc: { enabled: false, server: 'irc.libera.chat:6697', tls: true, nick: 'mybot', user: '', real_name: '', password: '', nickserv_password: '', sasl_user: '', sasl_password: '', channels: ['#mychannel'], request_caps: ['server-time', 'message-tags'], allow_from: [], group_trigger: { mention_only: true }, typing: { enabled: false }, reasoning_channel_id: '' }
+          wecom: { enabled: false, bot_id: '', secret: '', websocket_url: 'wss://openws.work.weixin.qq.com', send_thinking_message: true, allow_from: [], reasoning_channel_id: '' },
+          matrix: { enabled: false, homeserver: 'https://matrix.org', user_id: '', access_token: '', device_id: '', join_on_invite: true, allow_from: [], group_trigger: { mention_only: true }, placeholder: { enabled: true, text: 'Thinking... \ud83d\udcad' }, reasoning_channel_id: '', crypto_database_path: '', crypto_passphrase: '' },
+          irc: { enabled: false, server: 'irc.libera.chat:6697', tls: true, nick: 'mybot', user: '', real_name: '', password: '', nickserv_password: '', sasl_user: '', sasl_password: '', channels: ['#mychannel'], request_caps: ['server-time', 'message-tags'], allow_from: [], group_trigger: { mention_only: true }, typing: { enabled: false }, reasoning_channel_id: '' },
+          pico: { enabled: false, token: '', allow_token_query: false, allow_origins: [], ping_interval: 30, read_timeout: 60, max_connections: 100, allow_from: [] },
+          pico_client: { enabled: false, url: 'wss://remote-pico-server/pico/ws', token: '', session_id: '', ping_interval: 30, read_timeout: 60, allow_from: [] }
         },
         model_list: [],
         providers: {
@@ -1420,15 +1579,29 @@
           avian: { api_key: '', api_base: 'https://api.avian.io/v1' },
           longcat: { api_key: '', api_base: 'https://api.longcat.chat/openai' }
         },
-        gateway: { host: '127.0.0.1', port: 18790 },
+        gateway: { host: '127.0.0.1', port: 18790, hot_reload: false, log_level: 'fatal' },
         tools: {
           allow_read_paths: null,
           allow_write_paths: null,
-          web: { enabled: true, brave: { enabled: false, api_key: '', api_keys: [], max_results: 5 }, tavily: { enabled: false, api_key: '', base_url: '', max_results: 0 }, duckduckgo: { enabled: true, max_results: 5 }, perplexity: { enabled: false, api_key: '', api_keys: [], max_results: 5 }, searxng: { enabled: false, base_url: 'http://localhost:8888', max_results: 5 }, glm_search: { enabled: false, api_key: '', base_url: 'https://open.bigmodel.cn/api/paas/v4/web_search', search_engine: 'search_std', max_results: 5 }, fetch_limit_bytes: 10485760 },
+          web: { 
+            enabled: true, 
+            prefer_native: true,
+            fetch_limit_bytes: 10485760,
+            format: 'plaintext',
+            private_host_whitelist: [],
+            brave: { enabled: false, api_key: '', api_keys: [], max_results: 5 }, 
+            tavily: { enabled: false, api_key: '', base_url: '', max_results: 0 }, 
+            duckduckgo: { enabled: true, max_results: 5 }, 
+            perplexity: { enabled: false, api_key: '', api_keys: [], max_results: 5 }, 
+            searxng: { enabled: false, base_url: 'http://localhost:8888', max_results: 5 }, 
+            glm_search: { enabled: false, api_key: '', base_url: 'https://open.bigmodel.cn/api/paas/v4/web_search', search_engine: 'search_std', max_results: 5 },
+            baidu_search: { enabled: false, api_key: '', base_url: 'https://qianfan.baidubce.com/v2/ai_search/web_search', max_results: 10 }
+          },
           cron: { enabled: true, exec_timeout_minutes: 5 },
           exec: { enabled: true, enable_deny_patterns: true, custom_deny_patterns: [], custom_allow_patterns: [] },
           skills: {
             enabled: true,
+            github: { proxy: '', token: '' },
             max_concurrent_searches: 2,
             search_cache: { max_size: 50, ttl_seconds: 300 },
             registries: {
@@ -1479,8 +1652,9 @@
           write_file: { enabled: true }
         },
         heartbeat: { enabled: true, interval: 30 },
-        devices: { enabled: false, monitor_usb: True },
-        voice: { echo_transcription: False },
+        devices: { enabled: false, monitor_usb: true },
+        voice: { model_name: '', echo_transcription: false },
+        hooks: { enabled: true, defaults: { observer_timeout_ms: 500, interceptor_timeout_ms: 5000, approval_timeout_ms: 60000 } },
       };
     }
 
