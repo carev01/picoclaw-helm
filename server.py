@@ -108,6 +108,7 @@ def default_config():
                 "max_tool_iterations": 20,
                 "summarize_message_threshold": 20,
                 "summarize_token_percent": 75,
+                "split_on_marker": False,
                 "tool_feedback": {
                     "enabled": False,
                     "max_args_length": 300
@@ -119,7 +120,7 @@ def default_config():
             "discord": {"enabled": False, "token": "", "proxy": "", "allow_from": [], "group_trigger": {"mention_only": False}, "reasoning_channel_id": ""},
             "slack": {"enabled": False, "bot_token": "", "app_token": "", "allow_from": [], "reasoning_channel_id": ""},
             "whatsapp": {"enabled": False, "bridge_url": "ws://localhost:3001", "use_native": False, "session_store_path": "", "allow_from": [], "reasoning_channel_id": ""},
-            "feishu": {"enabled": False, "app_id": "", "app_secret": "", "encrypt_key": "", "verification_token": "", "allow_from": [], "reasoning_channel_id": "", "random_reaction_emoji": [], "is_lark": False},
+            "feishu": {"enabled": False, "app_id": "", "app_secret": "", "encrypt_key": "", "verification_token": "", "allow_from": [], "reasoning_channel_id": "", "random_reaction_emoji": [], "is_lark": False, "placeholder": {"enabled": True, "text": ["Thinking...", "Processing...", "Typing..."]}},
             "dingtalk": {"enabled": False, "client_id": "", "client_secret": "", "allow_from": [], "reasoning_channel_id": ""},
             "qq": {"enabled": False, "app_id": "", "app_secret": "", "allow_from": [], "reasoning_channel_id": ""},
             "line": {"enabled": False, "channel_secret": "", "channel_access_token": "", "webhook_path": "/webhook/line", "allow_from": [], "reasoning_channel_id": ""},
@@ -243,7 +244,8 @@ def default_config():
             "install_skill": {"enabled": True},
             "list_dir": {"enabled": True},
             "message": {"enabled": True},
-            "read_file": {"enabled": True},
+            "read_file": {"enabled": True, "mode": "bytes"},
+            "send_tts": {"enabled": False},
             "spawn": {"enabled": True},
             "spi": {"enabled": False},
             "subagent": {"enabled": True},

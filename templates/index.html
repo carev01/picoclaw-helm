@@ -133,6 +133,11 @@
                        x-model.number="config.agents.defaults.summarize_token_percent">
                 <p class="text-xs text-gray-400 mt-1">Percentage of context to retain when summarizing</p>
               </div>
+              <div class="flex items-center gap-2">
+                <input type="checkbox" class="rounded bg-gray-100 border-gray-300 dark:bg-gray-800 dark:border-gray-600"
+                       x-model="config.agents.defaults.split_on_marker">
+                <span class="text-sm text-gray-500">Split on Marker</span>
+              </div>
             </div>
             <div class="mt-4 pt-4 border-t border-gray-200 dark:border-gray-700">
               <h4 class="text-sm font-medium mb-3">Tool Feedback</h4>
@@ -346,6 +351,18 @@
                   <input type="checkbox" class="rounded bg-gray-100 border-gray-300 dark:bg-gray-800 dark:border-gray-600"
                          x-model="config.channels.feishu.is_lark">
                   <span class="text-xs text-gray-500">Is Lark (Feishu Enterprise)</span>
+                </div>
+                <div class="flex items-center gap-2">
+                  <input type="checkbox" class="rounded bg-gray-100 border-gray-300 dark:bg-gray-800 dark:border-gray-600"
+                         x-model="config.channels.feishu.placeholder.enabled">
+                  <span class="text-xs text-gray-500">Show Placeholder</span>
+                </div>
+                <div>
+                  <label class="block text-xs text-gray-500 mb-1">Placeholder Text (comma-separated)</label>
+                  <input type="text" class="w-full bg-gray-100 border border-gray-300 dark:bg-gray-800 dark:border-gray-700 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-blue-500"
+                         :value="(config.channels.feishu.placeholder.text || []).join(', ')"
+                         @input="config.channels.feishu.placeholder.text = $event.target.value.split(',').map(s => s.trim()).filter(Boolean)"
+                         placeholder="Thinking..., Processing..., Typing...">
                 </div>
                 <div class="md:col-span-2">
                   <label class="block text-xs text-gray-500 mb-1">Allowed Users (comma-separated)</label>
@@ -877,6 +894,55 @@
         <section>
           <h2 class="text-lg font-semibold mb-3">Tools</h2>
           <div class="bg-white border border-gray-200 dark:bg-gray-900 dark:border-gray-800 rounded-xl p-4">
+            <div class="mb-4 pb-4 border-b border-gray-200 dark:border-gray-700">
+              <h3 class="font-medium mb-3">Basic Tools</h3>
+              <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
+                <div class="flex items-center gap-2">
+                  <input type="checkbox" class="rounded bg-gray-100 border-gray-300 dark:bg-gray-800 dark:border-gray-600"
+                         x-model="config.tools.read_file.enabled">
+                  <span class="text-sm text-gray-500 dark:text-gray-400">Read File</span>
+                </div>
+                <div>
+                  <label class="block text-xs text-gray-500 mb-1">Read File Mode</label>
+                  <select class="w-full bg-gray-100 border border-gray-300 dark:bg-gray-800 dark:border-gray-700 rounded-lg px-2 py-1.5 text-sm focus:outline-none focus:ring-1 focus:ring-blue-500"
+                          x-model="config.tools.read_file.mode">
+                    <option value="text">text</option>
+                    <option value="bytes">bytes</option>
+                  </select>
+                </div>
+                <div class="flex items-center gap-2">
+                  <input type="checkbox" class="rounded bg-gray-100 border-gray-300 dark:bg-gray-800 dark:border-gray-600"
+                         x-model="config.tools.write_file.enabled">
+                  <span class="text-sm text-gray-500 dark:text-gray-400">Write File</span>
+                </div>
+                <div class="flex items-center gap-2">
+                  <input type="checkbox" class="rounded bg-gray-100 border-gray-300 dark:bg-gray-800 dark:border-gray-600"
+                         x-model="config.tools.send_tts.enabled">
+                  <span class="text-sm text-gray-500 dark:text-gray-400">Send TTS</span>
+                </div>
+                <div class="flex items-center gap-2">
+                  <input type="checkbox" class="rounded bg-gray-100 border-gray-300 dark:bg-gray-800 dark:border-gray-600"
+                         x-model="config.tools.web_fetch.enabled">
+                  <span class="text-sm text-gray-500 dark:text-gray-400">Web Fetch</span>
+                </div>
+                <div class="flex items-center gap-2">
+                  <input type="checkbox" class="rounded bg-gray-100 border-gray-300 dark:bg-gray-800 dark:border-gray-600"
+                         x-model="config.tools.exec.enabled">
+                  <span class="text-sm text-gray-500 dark:text-gray-400">Exec</span>
+                </div>
+                <div class="flex items-center gap-2">
+                  <input type="checkbox" class="rounded bg-gray-100 border-gray-300 dark:bg-gray-800 dark:border-gray-600"
+                         x-model="config.tools.spawn.enabled">
+                  <span class="text-sm text-gray-500 dark:text-gray-400">Spawn</span>
+                </div>
+                <div class="flex items-center gap-2">
+                  <input type="checkbox" class="rounded bg-gray-100 border-gray-300 dark:bg-gray-800 dark:border-gray-600"
+                         x-model="config.tools.subagent.enabled">
+                  <span class="text-sm text-gray-500 dark:text-gray-400">Subagent</span>
+                </div>
+              </div>
+            </div>
+
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
                 <label class="flex items-center gap-2 mb-2">
@@ -1148,25 +1214,25 @@
               <div>
                 <label class="flex items-center gap-2 mb-2">
                   <input type="checkbox" class="rounded bg-gray-100 border-gray-300 dark:bg-gray-800 dark:border-gray-600"
-                         x-model="config.tools.mcp.servers.brave-search.enabled">
+                         x-model="config.tools.mcp.servers['brave-search'].enabled">
                   <span class="text-sm text-gray-500 dark:text-gray-400">Brave Search (MCP)</span>
                 </label>
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-2 ml-6" x-show="config.tools.mcp.servers.brave-search.enabled">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-2 ml-6" x-show="config.tools.mcp.servers['brave-search'].enabled">
                   <div>
                     <label class="block text-xs text-gray-500 mb-1">Command</label>
                     <input type="text" class="w-full bg-gray-100 border border-gray-300 dark:bg-gray-800 dark:border-gray-700 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-blue-500"
-                           x-model="config.tools.mcp.servers.brave-search.command">
+                           x-model="config.tools.mcp.servers['brave-search'].command">
                   </div>
                   <div class="md:col-span-2">
                     <label class="block text-xs text-gray-500 mb-1">Arguments (comma-separated)</label>
                     <input type="text" class="w-full bg-gray-100 border border-gray-300 dark:bg-gray-800 dark:border-gray-700 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-blue-500"
-                           :value="(config.tools.mcp.servers.brave-search.args || []).join(', ')"
-                           @input="config.tools.mcp.servers.brave-search.args = $event.target.value.split(',').map(s => s.trim()).filter(Boolean)">
+                           :value="(config.tools.mcp.servers['brave-search'].args || []).join(', ')"
+                           @input="config.tools.mcp.servers['brave-search'].args = $event.target.value.split(',').map(s => s.trim()).filter(Boolean)">
                   </div>
                   <div>
                     <label class="block text-xs text-gray-500 mb-1">Brave API Key</label>
                     <input type="password" class="w-full bg-gray-100 border border-gray-300 dark:bg-gray-800 dark:border-gray-700 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-blue-500"
-                           x-model="config.tools.mcp.servers.brave-search.env.BRAVE_API_KEY">
+                           x-model="config.tools.mcp.servers['brave-search'].env.BRAVE_API_KEY">
                   </div>
                 </div>
               </div>
@@ -1540,6 +1606,7 @@
             max_tool_iterations: 20, 
             summarize_message_threshold: 20, 
             summarize_token_percent: 75,
+            split_on_marker: false,
             tool_feedback: { enabled: false, max_args_length: 300 }
           } 
         },
@@ -1548,7 +1615,7 @@
           discord: { enabled: false, token: '', proxy: '', allow_from: [], group_trigger: { mention_only: false }, reasoning_channel_id: '' },
           slack: { enabled: false, bot_token: '', app_token: '', allow_from: [], reasoning_channel_id: '' },
           whatsapp: { enabled: false, bridge_url: 'ws://localhost:3001', use_native: false, session_store_path: '', allow_from: [], reasoning_channel_id: '' },
-          feishu: { enabled: false, app_id: '', app_secret: '', encrypt_key: '', verification_token: '', allow_from: [], reasoning_channel_id: '', random_reaction_emoji: [], is_lark: false },
+          feishu: { enabled: false, app_id: '', app_secret: '', encrypt_key: '', verification_token: '', allow_from: [], reasoning_channel_id: '', random_reaction_emoji: [], is_lark: false, placeholder: { enabled: true, text: ['Thinking...', 'Processing...', 'Typing...'] } },
           dingtalk: { enabled: false, client_id: '', client_secret: '', allow_from: [], reasoning_channel_id: '' },
           qq: { enabled: false, app_id: '', app_secret: '', allow_from: [], reasoning_channel_id: '' },
           line: { enabled: false, channel_secret: '', channel_access_token: '', webhook_path: '/webhook/line', allow_from: [], reasoning_channel_id: '' },
@@ -1644,7 +1711,8 @@
           install_skill: { enabled: true },
           list_dir: { enabled: true },
           message: { enabled: true },
-          read_file: { enabled: true },
+          read_file: { enabled: true, mode: 'bytes' },
+          send_tts: { enabled: false },
           spawn: { enabled: true },
           spi: { enabled: false },
           subagent: { enabled: true },
