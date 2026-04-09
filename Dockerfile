@@ -1,13 +1,13 @@
 # ============================================================
 # Stage 1: Build the picoclaw binary
 # ============================================================
-FROM golang:1.25.8-alpine AS builder
+FROM golang:1.25.9-alpine AS builder
 
 RUN apk add --no-cache git make
 
 WORKDIR /src
 
-ARG PICOCLAW_VERSION=v0.2.5
+ARG PICOCLAW_VERSION=v0.2.6
 
 RUN git clone --depth 1 --branch ${PICOCLAW_VERSION} https://github.com/sipeed/picoclaw.git .
 RUN go mod download
