@@ -103,7 +103,7 @@ def default_config():
                 "restrict_to_workspace": True,
                 "model_name": "gpt-5.4",
                 "max_tokens": 8192,
-                "context_window": 131072,
+                "context_window": 1310720,
                 "temperature": 0.7,
                 "max_tool_iterations": 20,
                 "summarize_message_threshold": 20,
@@ -115,6 +115,35 @@ def default_config():
                 }
             }
         },
+        "model_list": [
+            {
+                "model_name": "gpt-5.4",
+                "model": "openai/gpt-5.4",
+                "api_key": "",
+                "api_base": "https://api.openai.com/v1"
+            },
+            {
+                "model_name": "claude-sonnet-4.6",
+                "model": "anthropic/claude-sonnet-4.6",
+                "api_key": "",
+                "api_base": "https://api.anthropic.com/v1",
+                "thinking_level": "high"
+            },
+            {
+                "model_name": "deepseek",
+                "model": "deepseek/deepseek-chat",
+                "api_key": ""
+            },
+            {
+                "model_name": "gemini",
+                "model": "antigravity/gemini-2.0-flash",
+                "auth_method": ""
+            },
+            {
+                "model_name": "lmstudio-local",
+                "model": "lmstudio/openai/gpt-oss-20b"
+            }
+        ],
         "channels": {
             "telegram": {"enabled": False, "token": "", "base_url": "", "proxy": "", "allow_from": [], "reasoning_channel_id": "", "use_markdown_v2": False, "streaming": {"enabled": True}},
             "discord": {"enabled": False, "token": "", "proxy": "", "allow_from": [], "group_trigger": {"mention_only": False}, "reasoning_channel_id": ""},
@@ -132,7 +161,6 @@ def default_config():
             "pico": {"enabled": False, "token": "", "allow_token_query": False, "allow_origins": [], "ping_interval": 30, "read_timeout": 60, "max_connections": 100, "allow_from": []},
             "pico_client": {"enabled": False, "url": "wss://remote-pico-server/pico/ws", "token": "", "session_id": "", "ping_interval": 30, "read_timeout": 60, "allow_from": []}
         },
-        "model_list": [],
         "providers": {
             "anthropic": {"api_key": "", "api_base": ""},
             "openai": {"api_key": "", "api_base": "", "web_search": True},
@@ -425,6 +453,13 @@ async def api_status(request: Request):
     for name, chan in config.get("channels", {}).items():
         channels[name] = {"enabled": chan.get("enabled", False)}
 
+    # Check model_list for configured models
+    model_list = config.get("model_list", [])
+    models = {}
+    for m in model_list:
+        if m.get("model_name"):
+            models[m["model_name"]] = {"configured": bool(m.get("api_key"))}
+
     cron_dir = CONFIG_DIR / "cron"
     cron_jobs = []
     if cron_dir.exists():
@@ -438,6 +473,7 @@ async def api_status(request: Request):
         "gateway": gateway.get_status(),
         "providers": providers,
         "channels": channels,
+        "models": models,
         "cron": {"count": len(cron_jobs), "jobs": cron_jobs},
     })
 
@@ -480,6 +516,12 @@ async def auto_start_gateway():
         if isinstance(prov, dict) and prov.get("api_key"):
             has_key = True
             break
+    # Also check model_list for API keys
+    if not has_key:
+        for m in config.get("model_list", []):
+            if isinstance(m, dict) and m.get("api_key"):
+                has_key = True
+                break
     if has_key:
         asyncio.create_task(gateway.start())
 
