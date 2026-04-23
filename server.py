@@ -188,10 +188,12 @@ def default_config():
                 "prefer_native": True,
                 "fetch_limit_bytes": 10485760,
                 "format": "plaintext",
+                "provider": "auto",
                 "private_host_whitelist": [],
                 "brave": {"enabled": False, "api_key": "", "api_keys": [], "max_results": 5},
                 "tavily": {"enabled": False, "api_key": "", "base_url": "", "max_results": 0},
-                "duckduckgo": {"enabled": True, "max_results": 5},
+                "sogou": {"enabled": True, "max_results": 5},
+                "duckduckgo": {"enabled": False, "max_results": 5},
                 "perplexity": {"enabled": False, "api_key": "", "api_keys": [], "max_results": 5},
                 "searxng": {"enabled": False, "base_url": "http://localhost:8888", "max_results": 5},
                 "glm_search": {"enabled": False, "api_key": "", "base_url": "https://open.bigmodel.cn/api/paas/v4/web_search", "search_engine": "search_std", "max_results": 5},
@@ -201,7 +203,7 @@ def default_config():
             "exec": {"enabled": True, "enable_deny_patterns": True, "custom_deny_patterns": None, "custom_allow_patterns": None},
             "skills": {
                 "enabled": True,
-                "github": {"proxy": "", "token": ""},
+                "github": {"base_url": "https://github.com", "proxy": "", "token": ""},
                 "max_concurrent_searches": 2,
                 "search_cache": {"max_size": 50, "ttl_seconds": 300},
                 "registries": {
@@ -215,6 +217,12 @@ def default_config():
                         "timeout": 0,
                         "max_zip_size": 0,
                         "max_response_size": 0
+                    },
+                    "github": {
+                        "enabled": True,
+                        "base_url": "https://github.com",
+                        "proxy": "",
+                        "auth_token": ""
                     }
                 }
             },
