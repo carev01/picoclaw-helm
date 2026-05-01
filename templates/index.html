@@ -152,6 +152,11 @@
                   <input type="number" class="w-full bg-gray-100 border border-gray-300 dark:bg-gray-800 dark:border-gray-700 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-blue-500"
                          x-model.number="config.agents.defaults.tool_feedback.max_args_length">
                 </div>
+                <div class="flex items-center gap-2">
+                  <input type="checkbox" class="rounded bg-gray-100 border-gray-300 dark:bg-gray-800 dark:border-gray-600"
+                         x-model="config.agents.defaults.tool_feedback.separate_messages">
+                  <span class="text-sm text-gray-500">Separate Messages</span>
+                </div>
               </div>
             </div>
           </div>
@@ -940,6 +945,11 @@
                          x-model="config.tools.subagent.enabled">
                   <span class="text-sm text-gray-500 dark:text-gray-400">Subagent</span>
                 </div>
+                <div class="flex items-center gap-2">
+                  <input type="checkbox" class="rounded bg-gray-100 border-gray-300 dark:bg-gray-800 dark:border-gray-600"
+                         x-model="config.tools.serial.enabled">
+                  <span class="text-sm text-gray-500 dark:text-gray-400">Serial</span>
+                </div>
               </div>
             </div>
 
@@ -1406,7 +1416,7 @@
                 </tr>
               </thead>
               <tbody>
-                <template x-for="(info, name) in (status.providers || {})" :key="name">
+                <template x-for="(info, name) in (status.providers || {}})" :key="name">
                   <tr class="border-t border-gray-200 dark:border-gray-800">
                     <td class="px-4 py-2 capitalize" x-text="name"></td>
                     <td class="px-4 py-2">
@@ -1630,13 +1640,13 @@
             restrict_to_workspace: true, 
             model_name: 'gpt-5.4', 
             max_tokens: 8192,
-            context_window: 1310720,
+            context_window: 131072,
             temperature: 0.7, 
             max_tool_iterations: 20, 
             summarize_message_threshold: 20, 
             summarize_token_percent: 75,
             split_on_marker: false,
-            tool_feedback: { enabled: false, max_args_length: 300 }
+            tool_feedback: { enabled: false, max_args_length: 300, separate_messages: false }
           } 
         },
         channels: {
@@ -1750,6 +1760,7 @@
           message: { enabled: true },
           read_file: { enabled: true, mode: 'bytes' },
           send_tts: { enabled: false },
+          serial: { enabled: false },
           spawn: { enabled: true },
           spi: { enabled: false },
           subagent: { enabled: true },

@@ -103,7 +103,7 @@ def default_config():
                 "restrict_to_workspace": True,
                 "model_name": "gpt-5.4",
                 "max_tokens": 8192,
-                "context_window": 1310720,
+                "context_window": 131072,
                 "temperature": 0.7,
                 "max_tool_iterations": 20,
                 "summarize_message_threshold": 20,
@@ -111,7 +111,8 @@ def default_config():
                 "split_on_marker": False,
                 "tool_feedback": {
                     "enabled": False,
-                    "max_args_length": 300
+                    "max_args_length": 300,
+                    "separate_messages": False
                 }
             }
         },
@@ -282,6 +283,7 @@ def default_config():
             "message": {"enabled": True},
             "read_file": {"enabled": True, "mode": "bytes"},
             "send_tts": {"enabled": False},
+            "serial": {"enabled": False},
             "spawn": {"enabled": True},
             "spi": {"enabled": False},
             "subagent": {"enabled": True},
