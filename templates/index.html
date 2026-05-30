@@ -133,6 +133,18 @@
                        x-model.number="config.agents.defaults.summarize_token_percent">
                 <p class="text-xs text-gray-400 mt-1">Percentage of context to retain when summarizing</p>
               </div>
+              <div>
+                <label class="block text-xs text-gray-500 mb-1">Max LLM Retries</label>
+                <input type="number" class="w-full bg-gray-100 border border-gray-300 dark:bg-gray-800 dark:border-gray-700 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-blue-500"
+                       x-model.number="config.agents.defaults.max_llm_retries">
+                <p class="text-xs text-gray-400 mt-1">Maximum number of retries on LLM errors</p>
+              </div>
+              <div>
+                <label class="block text-xs text-gray-500 mb-1">LLM Retry Backoff (seconds)</label>
+                <input type="number" class="w-full bg-gray-100 border border-gray-300 dark:bg-gray-800 dark:border-gray-700 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-blue-500"
+                       x-model.number="config.agents.defaults.llm_retry_backoff_secs">
+                <p class="text-xs text-gray-400 mt-1">Backoff time between LLM retries</p>
+              </div>
               <div class="flex items-center gap-2">
                 <input type="checkbox" class="rounded bg-gray-100 border-gray-300 dark:bg-gray-800 dark:border-gray-600"
                        x-model="config.agents.defaults.split_on_marker">
@@ -897,6 +909,103 @@
         </section>
 
         <section>
+          <h2 class="text-lg font-semibold mb-3">Events</h2>
+          <div class="bg-white border border-gray-200 dark:bg-gray-900 dark:border-gray-800 rounded-xl p-4">
+            <div class="mb-4 pb-4 border-b border-gray-200 dark:border-gray-700">
+              <h3 class="font-medium mb-3">Logging</h3>
+              <div class="flex items-center gap-2 mb-4">
+                <input type="checkbox" class="rounded bg-gray-100 border-gray-300 dark:bg-gray-800 dark:border-gray-600"
+                       x-model="config.events.logging.enabled">
+                <span class="text-sm text-gray-500 dark:text-gray-400">Enable Event Logging</span>
+              </div>
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-4" x-show="config.events.logging.enabled">
+                <div>
+                  <label class="block text-xs text-gray-500 mb-1">Include Patterns (comma-separated)</label>
+                  <input type="text" class="w-full bg-gray-100 border border-gray-300 dark:bg-gray-800 dark:border-gray-700 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-blue-500"
+                         :value="(config.events.logging.include || []).join(', ')"
+                         @input="config.events.logging.include = $event.target.value.split(',').map(s => s.trim()).filter(Boolean)"
+                         placeholder="agent.*">
+                </div>
+                <div>
+                  <label class="block text-xs text-gray-500 mb-1">Exclude Patterns (comma-separated)</label>
+                  <input type="text" class="w-full bg-gray-100 border border-gray-300 dark:bg-gray-800 dark:border-gray-700 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-blue-500"
+                         :value="(config.events.logging.exclude || []).join(', ')"
+                         @input="config.events.logging.exclude = $event.target.value.split(',').map(s => s.trim()).filter(Boolean)"
+                         placeholder="Optional exclude patterns">
+                </div>
+                <div>
+                  <label class="block text-xs text-gray-500 mb-1">Min Severity</label>
+                  <select class="w-full bg-gray-100 border border-gray-300 dark:bg-gray-800 dark:border-gray-700 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-blue-500"
+                          x-model="config.events.logging.min_severity">
+                    <option value="debug">Debug</option>
+                    <option value="info">Info</option>
+                    <option value="warn">Warn</option>
+                    <option value="error">Error</option>
+                  </select>
+                </div>
+                <div class="flex items-center gap-2">
+                  <input type="checkbox" class="rounded bg-gray-100 border-gray-300 dark:bg-gray-800 dark:border-gray-600"
+                         x-model="config.events.logging.include_payload">
+                  <span class="text-sm text-gray-500">Include Payload</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section>
+          <h2 class="text-lg font-semibold mb-3">Evolution</h2>
+          <div class="bg-white border border-gray-200 dark:bg-gray-900 dark:border-gray-800 rounded-xl p-4">
+            <div class="flex items-center gap-2 mb-4">
+              <input type="checkbox" class="rounded bg-gray-100 border-gray-300 dark:bg-gray-800 dark:border-gray-600"
+                     x-model="config.evolution.enabled">
+              <span class="text-sm text-gray-500 dark:text-gray-400">Enable Evolution</span>
+            </div>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4" x-show="config.evolution.enabled">
+              <div>
+                <label class="block text-xs text-gray-500 mb-1">Mode</label>
+                <select class="w-full bg-gray-100 border border-gray-300 dark:bg-gray-800 dark:border-gray-700 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-blue-500"
+                        x-model="config.evolution.mode">
+                  <option value="observe">Observe</option>
+                  <option value="evolve">Evolve</option>
+                </select>
+              </div>
+              <div>
+                <label class="block text-xs text-gray-500 mb-1">State Directory</label>
+                <input type="text" class="w-full bg-gray-100 border border-gray-300 dark:bg-gray-800 dark:border-gray-700 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-blue-500"
+                       x-model="config.evolution.state_dir" placeholder="Optional state directory path">
+              </div>
+              <div>
+                <label class="block text-xs text-gray-500 mb-1">Min Task Count</label>
+                <input type="number" class="w-full bg-gray-100 border border-gray-300 dark:bg-gray-800 dark:border-gray-700 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-blue-500"
+                       x-model.number="config.evolution.min_task_count">
+              </div>
+              <div>
+                <label class="block text-xs text-gray-500 mb-1">Min Success Ratio</label>
+                <input type="number" step="0.1" min="0" max="1" class="w-full bg-gray-100 border border-gray-300 dark:bg-gray-800 dark:border-gray-700 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-blue-500"
+                       x-model.number="config.evolution.min_success_ratio">
+              </div>
+              <div>
+                <label class="block text-xs text-gray-500 mb-1">Cold Path Trigger</label>
+                <select class="w-full bg-gray-100 border border-gray-300 dark:bg-gray-800 dark:border-gray-700 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-blue-500"
+                        x-model="config.evolution.cold_path_trigger">
+                  <option value="after_turn">After Turn</option>
+                  <option value="on_error">On Error</option>
+                  <option value="always">Always</option>
+                </select>
+              </div>
+              <div>
+                <label class="block text-xs text-gray-500 mb-1">Cold Path Times (comma-separated)</label>
+                <input type="text" class="w-full bg-gray-100 border border-gray-300 dark:bg-gray-800 dark:border-gray-700 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-blue-500"
+                       :value="(config.evolution.cold_path_times || []).join(', ')"
+                       @input="config.evolution.cold_path_times = $event.target.value.split(',').map(s => s.trim()).filter(Boolean)"
+                       placeholder="Optional times like 10:00,18:00">
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section>
           <h2 class="text-lg font-semibold mb-3">Tools</h2>
           <div class="bg-white border border-gray-200 dark:bg-gray-900 dark:border-gray-800 rounded-xl p-4">
             <div class="mb-4 pb-4 border-b border-gray-200 dark:border-gray-700">
@@ -1018,6 +1127,26 @@
               </div>
               <div>
                 <label class="flex items-center gap-2 mb-2">
+                  <input type="checkbox" class="rounded bg-gray-100 border-gray-300 dark:bg-gray-800 dark:border-gray-600" x-model="config.tools.web.gemini.enabled">
+                  <span class="text-sm text-gray-500 dark:text-gray-400">Gemini Search</span>
+                </label>
+                <input type="password" class="w-full bg-gray-100 border border-gray-300 dark:bg-gray-800 dark:border-gray-700 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-blue-500"
+                       x-model="config.tools.web.gemini.api_key" placeholder="Enter Gemini API key">
+                <div class="mt-2 grid grid-cols-2 gap-2">
+                  <div>
+                    <label class="block text-xs text-gray-500 mb-1">Model</label>
+                    <input type="text" class="w-full bg-gray-100 border border-gray-300 dark:bg-gray-800 dark:border-gray-700 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-blue-500"
+                           x-model="config.tools.web.gemini.model" placeholder="gemini-2.5-flash">
+                  </div>
+                  <div>
+                    <label class="block text-xs text-gray-500 mb-1">Max Results</label>
+                    <input type="number" class="w-full bg-gray-100 border border-gray-300 dark:bg-gray-800 dark:border-gray-700 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-blue-500"
+                           x-model.number="config.tools.web.gemini.max_results">
+                  </div>
+                </div>
+              </div>
+              <div>
+                <label class="flex items-center gap-2 mb-2">
                   <input type="checkbox" class="rounded bg-gray-100 border-gray-300 dark:bg-gray-800 dark:border-gray-600" x-model="config.tools.web.sogou.enabled">
                   <span class="text-sm text-gray-500 dark:text-gray-400">Sogou Search</span>
                 </label>
@@ -1061,6 +1190,7 @@
                     <option value="searxng">SearXNG</option>
                     <option value="glm_search">GLM</option>
                     <option value="baidu_search">Baidu</option>
+                    <option value="gemini">Gemini</option>
                   </select>
                 </div>
                 <div class="md:col-span-2">
@@ -1252,8 +1382,7 @@
 
               <div>
                 <label class="flex items-center gap-2 mb-2">
-                  <input type="checkbox" class="rounded bg-gray-100 border-gray-300 dark:bg-gray-800 dark:border-gray-600"
-                         x-model="config.tools.mcp.servers['brave-search'].enabled">
+                  <input type="checkbox" class="rounded bg-gray-100 border-gray-300 dark:bg-gray-800 dark:border-gray-600" x-model="config.tools.mcp.servers['brave-search'].enabled">
                   <span class="text-sm text-gray-500 dark:text-gray-400">Brave Search (MCP)</span>
                 </label>
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-2 ml-6" x-show="config.tools.mcp.servers['brave-search'].enabled">
@@ -1416,7 +1545,7 @@
                 </tr>
               </thead>
               <tbody>
-                <template x-for="(info, name) in (status.providers || {}})" :key="name">
+                <template x-for="(info, name) in (status.providers || {}}" :key="name">
                   <tr class="border-t border-gray-200 dark:border-gray-800">
                     <td class="px-4 py-2 capitalize" x-text="name"></td>
                     <td class="px-4 py-2">
@@ -1646,6 +1775,8 @@
             summarize_message_threshold: 20, 
             summarize_token_percent: 75,
             split_on_marker: false,
+            max_llm_retries: 2,
+            llm_retry_backoff_secs: 2,
             tool_feedback: { enabled: false, max_args_length: 300, separate_messages: false }
           } 
         },
@@ -1703,7 +1834,8 @@
             perplexity: { enabled: false, api_key: '', api_keys: [], max_results: 5 }, 
             searxng: { enabled: false, base_url: 'http://localhost:8888', max_results: 5 }, 
             glm_search: { enabled: false, api_key: '', base_url: 'https://open.bigmodel.cn/api/paas/v4/web_search', search_engine: 'search_std', max_results: 5 },
-            baidu_search: { enabled: false, api_key: '', base_url: 'https://qianfan.baidubce.com/v2/ai_search/web_search', max_results: 10 }
+            baidu_search: { enabled: false, api_key: '', base_url: 'https://qianfan.baidubce.com/v2/ai_search/web_search', max_results: 10 },
+            gemini: { enabled: false, api_key: '', model: 'gemini-2.5-flash', max_results: 5 }
           },
           cron: { enabled: true, exec_timeout_minutes: 5 },
           exec: { enabled: true, enable_deny_patterns: true, custom_deny_patterns: [], custom_allow_patterns: [] },
@@ -1771,6 +1903,24 @@
         devices: { enabled: false, monitor_usb: true },
         voice: { model_name: '', echo_transcription: false },
         hooks: { enabled: true, defaults: { observer_timeout_ms: 500, interceptor_timeout_ms: 5000, approval_timeout_ms: 60000 } },
+        events: {
+          logging: {
+            enabled: true,
+            include: ['agent.*'],
+            exclude: [],
+            min_severity: 'info',
+            include_payload: false
+          }
+        },
+        evolution: {
+          enabled: false,
+          mode: 'observe',
+          state_dir: '',
+          min_task_count: 2,
+          min_success_ratio: 0.7,
+          cold_path_trigger: 'after_turn',
+          cold_path_times: []
+        }
       };
     }
 

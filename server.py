@@ -34,7 +34,7 @@ SECRET_FIELDS = {
     "password", "real_name", "sasl_user", "user",
     "GITHUB_PERSONAL_ACCESS_TOKEN", "BRAVE_API_KEY", "CONTEXT7_API_KEY",
     "SLACK_BOT_TOKEN", "SLACK_TEAM_ID", "auth_token", "secret",
-    "crypto_passphrase",
+    "crypto_passphrase", "session_id",
 }
 
 CONFIG_DIR = Path(os.environ.get("PICOCLAW_HOME", Path.home() / ".picoclaw"))
@@ -109,6 +109,8 @@ def default_config():
                 "summarize_message_threshold": 20,
                 "summarize_token_percent": 75,
                 "split_on_marker": False,
+                "max_llm_retries": 2,
+                "llm_retry_backoff_secs": 2,
                 "tool_feedback": {
                     "enabled": False,
                     "max_args_length": 300,
@@ -198,7 +200,8 @@ def default_config():
                 "perplexity": {"enabled": False, "api_key": "", "api_keys": [], "max_results": 5},
                 "searxng": {"enabled": False, "base_url": "http://localhost:8888", "max_results": 5},
                 "glm_search": {"enabled": False, "api_key": "", "base_url": "https://open.bigmodel.cn/api/paas/v4/web_search", "search_engine": "search_std", "max_results": 5},
-                "baidu_search": {"enabled": False, "api_key": "", "base_url": "https://qianfan.baidubce.com/v2/ai_search/web_search", "max_results": 10}
+                "baidu_search": {"enabled": False, "api_key": "", "base_url": "https://qianfan.baidubce.com/v2/ai_search/web_search", "max_results": 10},
+                "gemini": {"enabled": False, "api_key": "", "model": "gemini-2.5-flash", "max_results": 5}
             },
             "cron": {"enabled": True, "exec_timeout_minutes": 5},
             "exec": {"enabled": True, "enable_deny_patterns": True, "custom_deny_patterns": None, "custom_allow_patterns": None},
@@ -293,7 +296,25 @@ def default_config():
         "heartbeat": {"enabled": True, "interval": 30},
         "devices": {"enabled": False, "monitor_usb": True},
         "voice": {"model_name": "", "echo_transcription": False},
-        "hooks": {"enabled": True, "defaults": {"observer_timeout_ms": 500, "interceptor_timeout_ms": 5000, "approval_timeout_ms": 60000}}
+        "hooks": {"enabled": True, "defaults": {"observer_timeout_ms": 500, "interceptor_timeout_ms": 5000, "approval_timeout_ms": 60000}},
+        "events": {
+            "logging": {
+                "enabled": True,
+                "include": ["agent.*"],
+                "exclude": [],
+                "min_severity": "info",
+                "include_payload": False
+            }
+        },
+        "evolution": {
+            "enabled": False,
+            "mode": "observe",
+            "state_dir": "",
+            "min_task_count": 2,
+            "min_success_ratio": 0.7,
+            "cold_path_trigger": "after_turn",
+            "cold_path_times": []
+        }
     }
 
 
