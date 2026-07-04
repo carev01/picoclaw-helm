@@ -1062,6 +1062,29 @@
               </div>
             </div>
 
+            <div class="mb-4 pb-4 border-b border-gray-200 dark:border-gray-700">
+              <h3 class="font-medium mb-3">Cron Jobs</h3>
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <label class="block text-xs text-gray-500 mb-1">Exec Timeout (minutes)</label>
+                  <input type="number" class="w-full bg-gray-100 border border-gray-300 dark:bg-gray-800 dark:border-gray-700 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-blue-500"
+                         x-model.number="config.tools.cron.exec_timeout_minutes">
+                </div>
+                <div class="flex items-center gap-2">
+                  <input type="checkbox" class="rounded bg-gray-100 border-gray-300 dark:bg-gray-800 dark:border-gray-600"
+                         x-model="config.tools.cron.allow_command">
+                  <span class="text-sm text-gray-500">Allow Command</span>
+                </div>
+                <div class="md:col-span-2">
+                  <label class="block text-xs text-gray-500 mb-1">Command Allowed Remotes (comma-separated)</label>
+                  <input type="text" class="w-full bg-gray-100 border border-gray-300 dark:bg-gray-800 dark:border-gray-700 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-blue-500"
+                         :value="(config.tools.cron.command_allowed_remotes || []).join(', ')"
+                         @input="config.tools.cron.command_allowed_remotes = $event.target.value.split(',').map(s => s.trim()).filter(Boolean)"
+                         placeholder="Optional remote hosts allowed for commands">
+                </div>
+              </div>
+            </div>
+
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
                 <label class="flex items-center gap-2 mb-2">
@@ -1124,6 +1147,33 @@
                 </label>
                 <input type="password" class="w-full bg-gray-100 border border-gray-300 dark:bg-gray-800 dark:border-gray-700 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-blue-500"
                        x-model="config.tools.web.baidu_search.api_key" placeholder="Enter Baidu API key">
+              </div>
+              <div>
+                <label class="flex items-center gap-2 mb-2">
+                  <input type="checkbox" class="rounded bg-gray-100 border-gray-300 dark:bg-gray-800 dark:border-gray-600" x-model="config.tools.web.kagi.enabled">
+                  <span class="text-sm text-gray-500 dark:text-gray-400">Kagi Search</span>
+                </label>
+                <input type="password" class="w-full bg-gray-100 border border-gray-300 dark:bg-gray-800 dark:border-gray-700 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-blue-500"
+                       x-model="config.tools.web.kagi.api_key" placeholder="Enter Kagi API key">
+                <div class="mt-2 grid grid-cols-2 gap-2">
+                  <div>
+                    <label class="block text-xs text-gray-500 mb-1">Base URL</label>
+                    <input type="text" class="w-full bg-gray-100 border border-gray-300 dark:bg-gray-800 dark:border-gray-700 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-blue-500"
+                           x-model="config.tools.web.kagi.base_url" placeholder="https://kagi.com/api/v1/search">
+                  </div>
+                  <div>
+                    <label class="block text-xs text-gray-500 mb-1">Max Results</label>
+                    <input type="number" class="w-full bg-gray-100 border border-gray-300 dark:bg-gray-800 dark:border-gray-700 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-blue-500"
+                           x-model.number="config.tools.web.kagi.max_results">
+                  </div>
+                </div>
+                <div class="mt-2">
+                  <label class="block text-xs text-gray-500 mb-1">Additional API Keys (comma-separated)</label>
+                  <input type="text" class="w-full bg-gray-100 border border-gray-300 dark:bg-gray-800 dark:border-gray-700 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-blue-500"
+                         :value="(config.tools.web.kagi.api_keys || []).join(', ')"
+                         @input="config.tools.web.kagi.api_keys = $event.target.value.split(',').map(s => s.trim()).filter(Boolean)"
+                         placeholder="Optional additional keys">
+                </div>
               </div>
               <div>
                 <label class="flex items-center gap-2 mb-2">
@@ -1190,6 +1240,7 @@
                     <option value="searxng">SearXNG</option>
                     <option value="glm_search">GLM</option>
                     <option value="baidu_search">Baidu</option>
+                    <option value="kagi">Kagi</option>
                     <option value="gemini">Gemini</option>
                   </select>
                 </div>
@@ -1201,11 +1252,6 @@
                          placeholder="Optional hosts">
                 </div>
               </div>
-            </div>
-            <div class="mt-4 pt-4 border-t border-gray-200 dark:border-gray-700">
-              <label class="block text-xs text-gray-500 mb-1">Cron Job Timeout (minutes)</label>
-              <input type="number" class="w-full md:w-48 bg-gray-100 border border-gray-300 dark:bg-gray-800 dark:border-gray-700 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-blue-500"
-                     x-model.number="config.tools.cron.exec_timeout_minutes">
             </div>
             <div class="mt-4">
               <div class="flex items-center gap-2 mb-2">
@@ -1545,7 +1591,7 @@
                 </tr>
               </thead>
               <tbody>
-                <template x-for="(info, name) in (status.providers || {}}" :key="name">
+                <template x-for="(info, name) in (status.providers || {}})" :key="name">
                   <tr class="border-t border-gray-200 dark:border-gray-800">
                     <td class="px-4 py-2 capitalize" x-text="name"></td>
                     <td class="px-4 py-2">
@@ -1763,6 +1809,7 @@
 
     function defaultConfig() {
       return {
+        version: 3,
         agents: { 
           defaults: { 
             workspace: '~/.picoclaw/workspace', 
@@ -1835,9 +1882,10 @@
             searxng: { enabled: false, base_url: 'http://localhost:8888', max_results: 5 }, 
             glm_search: { enabled: false, api_key: '', base_url: 'https://open.bigmodel.cn/api/paas/v4/web_search', search_engine: 'search_std', max_results: 5 },
             baidu_search: { enabled: false, api_key: '', base_url: 'https://qianfan.baidubce.com/v2/ai_search/web_search', max_results: 10 },
+            kagi: { enabled: false, api_key: '', api_keys: [], base_url: 'https://kagi.com/api/v1/search', max_results: 5 },
             gemini: { enabled: false, api_key: '', model: 'gemini-2.5-flash', max_results: 5 }
           },
-          cron: { enabled: true, exec_timeout_minutes: 5 },
+          cron: { enabled: true, exec_timeout_minutes: 5, allow_command: true, command_allowed_remotes: [] },
           exec: { enabled: true, enable_deny_patterns: true, custom_deny_patterns: [], custom_allow_patterns: [] },
           skills: {
             enabled: true,

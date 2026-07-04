@@ -34,7 +34,7 @@ SECRET_FIELDS = {
     "password", "real_name", "sasl_user", "user",
     "GITHUB_PERSONAL_ACCESS_TOKEN", "BRAVE_API_KEY", "CONTEXT7_API_KEY",
     "SLACK_BOT_TOKEN", "SLACK_TEAM_ID", "auth_token", "secret",
-    "crypto_passphrase", "session_id",
+    "crypto_passphrase", "session_id", "corp_secret",
 }
 
 CONFIG_DIR = Path(os.environ.get("PICOCLAW_HOME", Path.home() / ".picoclaw"))
@@ -97,6 +97,7 @@ def save_config(data):
 
 def default_config():
     return {
+        "version": 3,
         "agents": {
             "defaults": {
                 "workspace": "~/.picoclaw/workspace",
@@ -201,9 +202,10 @@ def default_config():
                 "searxng": {"enabled": False, "base_url": "http://localhost:8888", "max_results": 5},
                 "glm_search": {"enabled": False, "api_key": "", "base_url": "https://open.bigmodel.cn/api/paas/v4/web_search", "search_engine": "search_std", "max_results": 5},
                 "baidu_search": {"enabled": False, "api_key": "", "base_url": "https://qianfan.baidubce.com/v2/ai_search/web_search", "max_results": 10},
+                "kagi": {"enabled": False, "api_key": "", "api_keys": [], "base_url": "https://kagi.com/api/v1/search", "max_results": 5},
                 "gemini": {"enabled": False, "api_key": "", "model": "gemini-2.5-flash", "max_results": 5}
             },
-            "cron": {"enabled": True, "exec_timeout_minutes": 5},
+            "cron": {"enabled": True, "exec_timeout_minutes": 5, "allow_command": True, "command_allowed_remotes": []},
             "exec": {"enabled": True, "enable_deny_patterns": True, "custom_deny_patterns": None, "custom_allow_patterns": None},
             "skills": {
                 "enabled": True,
